@@ -1,0 +1,18 @@
+{
+  "note": "Expectations for the STUB-provider pipeline (deterministic checks). This measures pipeline mechanics — recall of the deterministic stage, fingerprint verification, and cost accounting — NOT real-model detection quality, which requires an AI Gateway key (see docs/SETUP.md residuals).",
+  "fixtures": {
+    "sample-ai-saas": {
+      "expectedCwes": ["CWE-862", "CWE-798", "CWE-489", "CWE-1395"],
+      "minFindings": 4
+    },
+    "sample-ai-saas-fixed": {
+      "expectedCwes": [],
+      "minFindings": 0,
+      "verifiesFixture": "sample-ai-saas"
+    },
+    "sample-clean": {
+      "expectedCwes": [],
+      "minFindings": 0
+    }
+  }
+}

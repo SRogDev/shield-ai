@@ -183,10 +183,8 @@ struct TempDir(PathBuf);
 impl TempDir {
     fn new(tag: &str) -> Self {
         let n = TEMP_COUNTER.fetch_add(1, Ordering::SeqCst);
-        let dir = std::env::temp_dir().join(format!(
-            "shield-test-{tag}-{}-{n}",
-            std::process::id()
-        ));
+        let dir =
+            std::env::temp_dir().join(format!("shield-test-{tag}-{}-{n}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         TempDir(dir)
     }
@@ -288,10 +286,7 @@ fn scan_server(projects_body: Value, scan_status: &'static str) -> MockServer {
             ("POST", "/api/cli/repo-link") => MockResponse::ok(json!({ "ok": true })),
             ("POST", "/api/scans") => {
                 let files = req.json()["files"].as_array().cloned().unwrap_or_default();
-                let needed: Vec<Value> = files
-                    .iter()
-                    .map(|f| f["path"].clone())
-                    .collect();
+                let needed: Vec<Value> = files.iter().map(|f| f["path"].clone()).collect();
                 MockResponse::ok(json!({
                     "scanId": "scan-1",
                     "costShields": 5,
@@ -376,25 +371,23 @@ fn binary_help_lists_exactly_the_three_commands() {
 fn device_server(poll_bodies: Vec<Value>) -> (MockServer, Arc<AtomicUsize>) {
     let polls = Arc::new(AtomicUsize::new(0));
     let counter = Arc::clone(&polls);
-    let server = MockServer::start(move |req| {
-        match (req.method.as_str(), req.path.as_str()) {
-            ("POST", "/api/cli/device/start") => MockResponse::ok(json!({
-                "deviceCode": "dc-1",
-                "userCode": "ABCD-EFGH",
-                "verificationUrl": "http://localhost:3000/device",
-                "expiresInSec": 600,
-                "intervalSec": 0
-            })),
-            ("POST", "/api/cli/device/poll") => {
-                let i = counter.fetch_add(1, Ordering::SeqCst);
-                let body = poll_bodies
-                    .get(i)
-                    .unwrap_or(poll_bodies.last().unwrap())
-                    .clone();
-                MockResponse::ok(body)
-            }
-            _ => MockResponse::json(404, json!({ "error": "not found" })),
+    let server = MockServer::start(move |req| match (req.method.as_str(), req.path.as_str()) {
+        ("POST", "/api/cli/device/start") => MockResponse::ok(json!({
+            "deviceCode": "dc-1",
+            "userCode": "ABCD-EFGH",
+            "verificationUrl": "http://localhost:3000/device",
+            "expiresInSec": 600,
+            "intervalSec": 0
+        })),
+        ("POST", "/api/cli/device/poll") => {
+            let i = counter.fetch_add(1, Ordering::SeqCst);
+            let body = poll_bodies
+                .get(i)
+                .unwrap_or(poll_bodies.last().unwrap())
+                .clone();
+            MockResponse::ok(body)
         }
+        _ => MockResponse::json(404, json!({ "error": "not found" })),
     });
     (server, polls)
 }
@@ -462,7 +455,11 @@ fn credential_store_round_trip_permissions_and_logout_deletion() {
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
-        let mode = std::fs::metadata(store.path()).unwrap().permissions().mode() & 0o777;
+        let mode = std::fs::metadata(store.path())
+            .unwrap()
+            .permissions()
+            .mode()
+            & 0o777;
         assert_eq!(mode, 0o600, "credentials file must be owner-only");
     }
     assert_eq!(store.load().unwrap().as_deref(), Some("tok-secret-123"));
@@ -538,14 +535,25 @@ fn binary_is_excluded_by_content_and_odd_text_extensions_are_included() {
     dir.write("notes.weirdext", "plain text\n");
     dir.write("data.xyz", "{\"json\": true}\n");
     let snapshot = files::build_snapshot(dir.path()).unwrap();
-    assert_eq!(snapshot_paths(&snapshot), vec!["data.xyz", "notes.weirdext"]);
+    assert_eq!(
+        snapshot_paths(&snapshot),
+        vec!["data.xyz", "notes.weirdext"]
+    );
     assert_eq!(snapshot.excluded.binary_files, 2);
 }
 
 #[test]
 fn dependency_and_generated_directories_are_excluded() {
     let dir = TempDir::new("deps");
-    for d in ["node_modules", "target", "dist", "build", ".next", "vendor", ".git"] {
+    for d in [
+        "node_modules",
+        "target",
+        "dist",
+        "build",
+        ".next",
+        "vendor",
+        ".git",
+    ] {
         dir.write(&format!("{d}/pkg/code.js"), "console.log(1)\n");
     }
     dir.write("src/main.rs", "fn main() {}\n");
@@ -689,17 +697,15 @@ fn a_file_that_never_uploads_means_no_complete_call() {
     let snapshot = files::build_snapshot(dir.path()).unwrap();
     let put_attempts = Arc::new(AtomicUsize::new(0));
     let counter = Arc::clone(&put_attempts);
-    let server = MockServer::start(move |req| {
-        match (req.method.as_str(), req.path.as_str()) {
-            ("POST", "/api/scans") => MockResponse::ok(json!({
-                "scanId": "scan-1", "costShields": 5, "needed": ["a.rs"]
-            })),
-            ("PUT", "/api/scans/scan-1/files") => {
-                counter.fetch_add(1, Ordering::SeqCst);
-                MockResponse::dropped()
-            }
-            _ => MockResponse::json(404, json!({ "error": "not found" })),
+    let server = MockServer::start(move |req| match (req.method.as_str(), req.path.as_str()) {
+        ("POST", "/api/scans") => MockResponse::ok(json!({
+            "scanId": "scan-1", "costShields": 5, "needed": ["a.rs"]
+        })),
+        ("PUT", "/api/scans/scan-1/files") => {
+            counter.fetch_add(1, Ordering::SeqCst);
+            MockResponse::dropped()
         }
+        _ => MockResponse::json(404, json!({ "error": "not found" })),
     });
     let sleeper = noop_sleeper();
     let mut out: Vec<u8> = Vec::new();
@@ -735,24 +741,22 @@ fn complete_409_reuploads_missing_and_status_is_polled_only_after() {
     let snapshot = files::build_snapshot(dir.path()).unwrap();
     let completes = Arc::new(AtomicUsize::new(0));
     let counter = Arc::clone(&completes);
-    let server = MockServer::start(move |req| {
-        match (req.method.as_str(), req.path.as_str()) {
-            ("POST", "/api/scans") => MockResponse::ok(json!({
-                "scanId": "scan-1", "costShields": 5, "needed": ["a.rs", "b.rs"]
-            })),
-            ("PUT", "/api/scans/scan-1/files") => MockResponse::ok(json!({ "acked": true })),
-            ("POST", "/api/scans/scan-1/complete") => {
-                if counter.fetch_add(1, Ordering::SeqCst) == 0 {
-                    MockResponse::json(409, json!({ "missing": ["b.rs"] }))
-                } else {
-                    MockResponse::ok(json!({ "status": "analyzing" }))
-                }
+    let server = MockServer::start(move |req| match (req.method.as_str(), req.path.as_str()) {
+        ("POST", "/api/scans") => MockResponse::ok(json!({
+            "scanId": "scan-1", "costShields": 5, "needed": ["a.rs", "b.rs"]
+        })),
+        ("PUT", "/api/scans/scan-1/files") => MockResponse::ok(json!({ "acked": true })),
+        ("POST", "/api/scans/scan-1/complete") => {
+            if counter.fetch_add(1, Ordering::SeqCst) == 0 {
+                MockResponse::json(409, json!({ "missing": ["b.rs"] }))
+            } else {
+                MockResponse::ok(json!({ "status": "analyzing" }))
             }
-            ("GET", "/api/scans/scan-1") => MockResponse::ok(json!({
-                "id": "scan-1", "status": "completed", "costShields": 5
-            })),
-            _ => MockResponse::json(404, json!({ "error": "not found" })),
         }
+        ("GET", "/api/scans/scan-1") => MockResponse::ok(json!({
+            "id": "scan-1", "status": "completed", "costShields": 5
+        })),
+        _ => MockResponse::json(404, json!({ "error": "not found" })),
     });
     let sleeper = noop_sleeper();
     let mut out: Vec<u8> = Vec::new();
@@ -803,7 +807,8 @@ fn size_limit_is_a_hard_error_before_any_request() {
     let dir = TempDir::new("toobig");
     let big = vec![b'a'; (files::LARGE_MAX_BYTES + 1) as usize];
     dir.write("big.txt", big.as_slice());
-    let store = logged_in_store(&dir);
+    let home = TempDir::new("toobig-home");
+    let store = logged_in_store(&home);
     let server = scan_server(single_project_body(), "completed");
     let mut out: Vec<u8> = Vec::new();
     let err = run_scan(&server, &store, &dir, true, &NoPrompt, &mut out).unwrap_err();
@@ -818,7 +823,8 @@ fn size_limit_is_a_hard_error_before_any_request() {
 fn auto_skips_confirmation_and_single_project_user_is_never_prompted() {
     let dir = TempDir::new("auto");
     dir.write("main.rs", "fn main() {}\n");
-    let store = logged_in_store(&dir);
+    let home = TempDir::new("auto-home");
+    let store = logged_in_store(&home);
     let server = scan_server(single_project_body(), "completed");
     let mut out: Vec<u8> = Vec::new();
     // NoPrompt panics if either prompt fires.
@@ -850,7 +856,8 @@ fn auto_skips_confirmation_and_single_project_user_is_never_prompted() {
 fn declining_the_confirmation_cancels_before_any_request() {
     let dir = TempDir::new("decline");
     dir.write("main.rs", "fn main() {}\n");
-    let store = logged_in_store(&dir);
+    let home = TempDir::new("decline-home");
+    let store = logged_in_store(&home);
     let server = scan_server(single_project_body(), "completed");
     let mut out: Vec<u8> = Vec::new();
     let err = run_scan(&server, &store, &dir, false, &Decline, &mut out).unwrap_err();
@@ -873,7 +880,8 @@ fn scan_without_login_is_a_clear_error() {
 fn multi_project_user_picks_a_project_and_the_repo_is_linked() {
     let dir = TempDir::new("pick");
     dir.write("main.rs", "fn main() {}\n");
-    let store = logged_in_store(&dir);
+    let home = TempDir::new("pick-home");
+    let store = logged_in_store(&home);
     let server = scan_server(
         json!({
             "projects": [
@@ -910,7 +918,8 @@ fn multi_project_user_picks_a_project_and_the_repo_is_linked() {
 fn multi_project_user_can_create_a_project_during_resolution() {
     let dir = TempDir::new("create");
     dir.write("main.rs", "fn main() {}\n");
-    let store = logged_in_store(&dir);
+    let home = TempDir::new("create-home");
+    let store = logged_in_store(&home);
     let server = scan_server(
         json!({
             "projects": [{ "id": "p1", "name": "One" }],
@@ -944,7 +953,8 @@ fn multi_project_user_can_create_a_project_during_resolution() {
 fn auto_with_unresolved_multi_project_repo_fails_with_instructions() {
     let dir = TempDir::new("autofail");
     dir.write("main.rs", "fn main() {}\n");
-    let store = logged_in_store(&dir);
+    let home = TempDir::new("autofail-home");
+    let store = logged_in_store(&home);
     let server = scan_server(
         json!({
             "projects": [
@@ -971,7 +981,8 @@ fn auto_with_unresolved_multi_project_repo_fails_with_instructions() {
 fn a_server_side_repo_link_resolves_without_prompting() {
     let dir = TempDir::new("linked");
     dir.write("main.rs", "fn main() {}\n");
-    let store = logged_in_store(&dir);
+    let home = TempDir::new("linked-home");
+    let store = logged_in_store(&home);
     let server = scan_server(
         json!({
             "projects": [
@@ -1007,7 +1018,8 @@ fn a_server_side_repo_link_resolves_without_prompting() {
 fn server_status_is_reported_verbatim() {
     let dir = TempDir::new("verbatim");
     dir.write("main.rs", "fn main() {}\n");
-    let store = logged_in_store(&dir);
+    let home = TempDir::new("verbatim-home");
+    let store = logged_in_store(&home);
     // The mock never moves past "analyzing": the CLI must say exactly
     // that, never claim the analysis ran.
     let server = scan_server(single_project_body(), "analyzing");
@@ -1034,7 +1046,12 @@ fn remote_url_hash_is_the_sha256_of_the_git_remote() {
     dir.write("main.rs", "fn main() {}\n");
     for args in [
         vec!["init", "-q"],
-        vec!["remote", "add", "origin", "https://example.com/acme/repo.git"],
+        vec![
+            "remote",
+            "add",
+            "origin",
+            "https://example.com/acme/repo.git",
+        ],
     ] {
         let status = std::process::Command::new("git")
             .arg("-C")
@@ -1046,9 +1063,7 @@ fn remote_url_hash_is_the_sha256_of_the_git_remote() {
     }
     assert_eq!(
         files::remote_url_hash(dir.path()),
-        Some(files::sha256_hex(
-            b"https://example.com/acme/repo.git"
-        ))
+        Some(files::sha256_hex(b"https://example.com/acme/repo.git"))
     );
     assert_eq!(files::repo_name(dir.path()), dir.basename());
 

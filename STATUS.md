@@ -1,5 +1,14 @@
 # Status
 
+## 2026-10-23 — License decided: Elastic License 2.0
+
+Roger's decision: the repo will be public (once GitHub access is restored)
+under the Elastic License 2.0 — source-available, self-hosting legally
+permitted, commercial hosted/managed offering reserved to Roger. The
+product itself ships no self-hosting guides or support; it is a hosted
+product. `LICENSE` added; README and PLAN_V2 §20 updated in the same
+change.
+
 ## 2026-10-23 — Local MVP build complete (phases 0–8)
 
 All work is local (GitHub account suspended — zero GitHub calls). Linear

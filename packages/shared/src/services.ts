@@ -338,6 +338,13 @@ export class ShieldService {
     return { status: scan.status, missing: [] };
   }
 
+  /** Server-internal: Shield cost of a scan (for budget derivation). */
+  scanCostShields(scanId: string): number {
+    const scan = this.scans.get(scanId);
+    if (!scan) throw new ForbiddenError("scan not found");
+    return scan.costShields;
+  }
+
   getScan(userId: string, scanId: string) {
     const scan = this.getOwnedScan(userId, scanId);
     return {

@@ -65,7 +65,12 @@ export interface WorkflowInput {
 }
 
 export interface WorkflowDeps {
-  ai: AiProvider;
+  /**
+   * The AI provider, or a factory for providers that need the run context
+   * (the stub provider derives its deterministic answers from the gathered
+   * evidence, so it is built after stage 2).
+   */
+  ai: AiProvider | ((ctx: { files: SourceFileInput[]; evidence: import("./schemas.js").EvidenceItem[] }) => AiProvider);
   tools: DeterministicToolRunner;
   /** Hard USD budget for AI spend across stages (from the Shield cost). */
   budgetUsd: number;
@@ -193,6 +198,9 @@ export async function runScanWorkflow(
     };
   }
 
+  const ai: AiProvider =
+    typeof deps.ai === "function" ? deps.ai({ files: input.files, evidence }) : deps.ai;
+
   if (input.action === "quick") {
     /* Deterministic-only path (PLAN_V2 §3): no AI stages at all. */
     const candidates = deterministicCandidates(evidence);
@@ -213,7 +221,7 @@ export async function runScanWorkflow(
   } else {
     /* Stage 1 — understand the project. */
     const understandRes = await runStage("understand", () =>
-      deps.ai.generateStructured(
+      ai.generateStructured(
         "understand",
         ProjectUnderstandingSchema,
         JSON.stringify({
@@ -233,7 +241,7 @@ export async function runScanWorkflow(
 
     /* Stage 3 — identify risks from evidence. */
     const identifyRes = await runStage("identify", () =>
-      deps.ai.generateStructured(
+      ai.generateStructured(
         "identify",
         IdentifyOutSchema,
         JSON.stringify({
@@ -250,7 +258,7 @@ export async function runScanWorkflow(
 
     /* Stage 4 — evaluate findings (validity, severity, confidence). */
     const evaluateRes = await runStage("evaluate", () =>
-      deps.ai.generateStructured(
+      ai.generateStructured(
         "evaluate",
         EvaluateOutSchema,
         JSON.stringify({
@@ -267,7 +275,7 @@ export async function runScanWorkflow(
 
     /* Stage 5 — explain findings. */
     const explainRes = await runStage("explain", () =>
-      deps.ai.generateStructured(
+      ai.generateStructured(
         "explain",
         ExplainOutSchema,
         JSON.stringify({
@@ -285,7 +293,7 @@ export async function runScanWorkflow(
 
     /* Stage 6 — correction plan. */
     const planRes = await runStage("plan", () =>
-      deps.ai.generateStructured(
+      ai.generateStructured(
         "plan",
         CorrectionPlanSchema,
         JSON.stringify({

@@ -1,0 +1,108 @@
+/* Shield AI design system (PLAN_V2 §13): blue primary family around
+   #2563EB, Inter everywhere, calm slate neutrals, discreet functional
+   motion only. No hacker aesthetics. Severity colors are semantic. */
+:root {
+  --blue: #2563eb;
+  --blue-dark: #1d4ed8;
+  --blue-soft: #eff6ff;
+  --ink: #0f172a;
+  --muted: #475569;
+  --faint: #94a3b8;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --critical: #b91c1c;
+  --high: #dc2626;
+  --medium: #d97706;
+  --low: #0284c7;
+  --info: #64748b;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink);
+  padding: 0.5rem 1rem;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+button:hover { border-color: var(--blue); }
+button.primary {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+  font-weight: 600;
+}
+button.primary:hover { background: var(--blue-dark); }
+button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+input, select {
+  font: inherit;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink);
+}
+
+.container { max-width: 1080px; margin: 0 auto; padding: 0 1.25rem; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #fff;
+}
+.badge.Critical { background: var(--critical); }
+.badge.High { background: var(--high); }
+.badge.Medium { background: var(--medium); }
+.badge.Low { background: var(--low); }
+.badge.Info { background: var(--info); }
+
+.banner {
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.rise { animation: rise 450ms ease both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; }
+  * { transition: none !important; }
+}

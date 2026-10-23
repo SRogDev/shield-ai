@@ -35,7 +35,8 @@ export function shannonEntropy(s: string): number {
   return entropy;
 }
 
-const PLACEHOLDER = /(example|changeme|placeholder|your[_-]|xxxx|\.\.\.|process\.env|os\.environ|getenv)/i;
+const PLACEHOLDER =
+  /(example|changeme|placeholder|your[_-]|xxxx|\.\.\.|process\.env|os\.environ|getenv)/i;
 
 interface SecretRule {
   id: string;
@@ -45,12 +46,28 @@ interface SecretRule {
 }
 
 const SECRET_RULES: SecretRule[] = [
-  { id: "private-key-block", regex: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/, label: "private key block committed to source", valueGroup: 0 },
-  { id: "aws-access-key", regex: /\b((?:AKIA|ASIA|AGPA|AIDA|AROA)[A-Z0-9]{16})\b/, label: "AWS access key id in source", valueGroup: 1 },
-  { id: "jwt-token", regex: /\b(eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{5,})\b/, label: "hardcoded JWT in source", valueGroup: 1 },
+  {
+    id: "private-key-block",
+    regex: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
+    label: "private key block committed to source",
+    valueGroup: 0,
+  },
+  {
+    id: "aws-access-key",
+    regex: /\b((?:AKIA|ASIA|AGPA|AIDA|AROA)[A-Z0-9]{16})\b/,
+    label: "AWS access key id in source",
+    valueGroup: 1,
+  },
+  {
+    id: "jwt-token",
+    regex: /\b(eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{5,})\b/,
+    label: "hardcoded JWT in source",
+    valueGroup: 1,
+  },
   {
     id: "generic-secret-assignment",
-    regex: /(api[_-]?key|client[_-]?secret|auth[_-]?token|password|passwd|secret)\s*[:=]\s*["']([^"'\s]{8,})["']/gi,
+    regex:
+      /(api[_-]?key|client[_-]?secret|auth[_-]?token|password|passwd|secret)\s*[:=]\s*["']([^"'\s]{8,})["']/gi,
     label: "secret-looking literal assigned in source",
     valueGroup: 2,
   },
@@ -85,9 +102,22 @@ export function findSecrets(files: SourceFileInput[]): EvidenceItem[] {
 }
 
 const CONFIG_RULES: { id: string; regex: RegExp; message: string }[] = [
-  { id: "cors-wildcard", regex: /(Access-Control-Allow-Origin|cors|origin)\s*[:=]\s*["']\*["']/, message: "CORS allows any origin (*)" },
-  { id: "tls-verification-disabled", regex: /(NODE_TLS_REJECT_UNAUTHORIZED\s*=\s*["']?0|rejectUnauthorized\s*:\s*false|verify\s*:\s*false)/, message: "TLS certificate verification is disabled" },
-  { id: "debug-enabled", regex: /(^|[^a-zA-Z])debug\s*[:=]\s*true/, message: "debug mode enabled in configuration" },
+  {
+    id: "cors-wildcard",
+    regex: /(Access-Control-Allow-Origin|cors|origin)\s*[:=]\s*["']\*["']/,
+    message: "CORS allows any origin (*)",
+  },
+  {
+    id: "tls-verification-disabled",
+    regex:
+      /(NODE_TLS_REJECT_UNAUTHORIZED\s*=\s*["']?0|rejectUnauthorized\s*:\s*false|verify\s*:\s*false)/,
+    message: "TLS certificate verification is disabled",
+  },
+  {
+    id: "debug-enabled",
+    regex: /(^|[^a-zA-Z])debug\s*[:=]\s*true/,
+    message: "debug mode enabled in configuration",
+  },
 ];
 
 export function findInsecureConfig(files: SourceFileInput[]): EvidenceItem[] {
@@ -131,15 +161,25 @@ export function parsePackageLock(content: string): Dependency[] {
   } catch {
     // Not JSON (or a different lockfile): no npm deps extracted.
   }
-  return [...deps.entries()].map(([name, version]) => ({ ecosystem: "npm" as const, name, version }));
+  return [...deps.entries()].map(([name, version]) => ({
+    ecosystem: "npm" as const,
+    name,
+    version,
+  }));
 }
 
 export function parsePnpmLock(content: string): Dependency[] {
   const deps = new Map<string, string>();
-  for (const m of content.matchAll(/^\s{2}(\/?[@a-z0-9._-]+(?:\/[a-z0-9._-]+)?)@(\d+\.\d+\.\d+[^:\s]*)/gm)) {
+  for (const m of content.matchAll(
+    /^\s{2}(\/?[@a-z0-9._-]+(?:\/[a-z0-9._-]+)?)@(\d+\.\d+\.\d+[^:\s]*)/gm,
+  )) {
     if (m[1] && m[2]) deps.set(m[1].replace(/^\//, ""), m[2]);
   }
-  return [...deps.entries()].map(([name, version]) => ({ ecosystem: "npm" as const, name, version }));
+  return [...deps.entries()].map(([name, version]) => ({
+    ecosystem: "npm" as const,
+    name,
+    version,
+  }));
 }
 
 export function extractDependencies(files: SourceFileInput[]): Dependency[] {
@@ -185,7 +225,12 @@ export class HttpOsvClient implements OsvClient {
       const dep = deps[i];
       if (!dep) return;
       for (const vuln of result.vulns ?? []) {
-        out.push({ id: vuln.id, packageName: dep.name, version: dep.version, summary: vuln.summary ?? vuln.id });
+        out.push({
+          id: vuln.id,
+          packageName: dep.name,
+          version: dep.version,
+          summary: vuln.summary ?? vuln.id,
+        });
       }
     });
     return out;
@@ -199,10 +244,20 @@ export class HttpOsvClient implements OsvClient {
 export class StubOsvClient implements OsvClient {
   static readonly FIXTURES: Record<string, OsvVulnerability[]> = {
     "lodash@4.17.20": [
-      { id: "GHSA-35jh-r3h4-6jhm", packageName: "lodash", version: "4.17.20", summary: "[stub fixture] Command Injection in lodash" },
+      {
+        id: "GHSA-35jh-r3h4-6jhm",
+        packageName: "lodash",
+        version: "4.17.20",
+        summary: "[stub fixture] Command Injection in lodash",
+      },
     ],
     "jsonwebtoken@8.5.1": [
-      { id: "GHSA-8cf7-32gw-wr33", packageName: "jsonwebtoken", version: "8.5.1", summary: "[stub fixture] jsonwebtoken signature validation issue" },
+      {
+        id: "GHSA-8cf7-32gw-wr33",
+        packageName: "jsonwebtoken",
+        version: "8.5.1",
+        summary: "[stub fixture] jsonwebtoken signature validation issue",
+      },
     ],
   };
   async queryBatch(deps: Dependency[]): Promise<OsvVulnerability[]> {
@@ -217,7 +272,9 @@ export async function findVulnerableDependencies(
   const deps = extractDependencies(files);
   if (deps.length === 0) return [];
   const vulns = await osv.queryBatch(deps);
-  const lockPath = files.find((f) => f.path.endsWith("lock.json") || f.path.endsWith("lock.yaml"))?.path ?? "package-lock.json";
+  const lockPath =
+    files.find((f) => f.path.endsWith("lock.json") || f.path.endsWith("lock.yaml"))?.path ??
+    "package-lock.json";
   return vulns.map((v) => ({
     checkId: `dependency:${v.id}`,
     filePath: lockPath,
@@ -231,7 +288,8 @@ export async function findVulnerableDependencies(
 /* ---------------------------- AST checks (TS/JS) --------------------------- */
 
 const HTTP_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
-const AUTH_MARKERS = /(auth|session|currentUser|requireAuth|requireUser|getUser|verifyToken|verifySession|clerk|unauthorized)/i;
+const AUTH_MARKERS =
+  /(auth|session|currentUser|requireAuth|requireUser|getUser|verifyToken|verifySession|clerk|unauthorized)/i;
 
 function routeIdentityFor(filePath: string, method: string): string {
   const routePath = filePath
@@ -255,7 +313,12 @@ export function findUnauthenticatedRoutes(files: SourceFileInput[]): EvidenceIte
     if (!/(route\.[tj]sx?$|[/\\]api[/\\])/.test(file.path)) continue;
     const sf = ts.createSourceFile(file.path, file.content, ts.ScriptTarget.Latest, true);
     const visit = (node: ts.Node): void => {
-      if (ts.isFunctionDeclaration(node) && node.name && HTTP_METHODS.has(node.name.text) && node.body) {
+      if (
+        ts.isFunctionDeclaration(node) &&
+        node.name &&
+        HTTP_METHODS.has(node.name.text) &&
+        node.body
+      ) {
         const bodyText = node.body.getText(sf);
         if (!AUTH_MARKERS.test(bodyText)) {
           const { line } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
@@ -265,6 +328,7 @@ export function findUnauthenticatedRoutes(files: SourceFileInput[]): EvidenceIte
             line: line + 1,
             message: `route handler ${node.name.text} shows no authentication/authorization check`,
             pattern: `export async function ${node.name.text}(...) { ... }`,
+            route: routeIdentityFor(file.path, node.name.text),
             source: "ts-check",
           });
         }

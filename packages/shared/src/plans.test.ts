@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SnapshotTooLargeError } from "./errors.js";
-import { PLANS, SHIELD_PACKS, budgetUsdForAction, costForAction } from "./plans.js";
+import { budgetUsdForAction, costForAction, PLANS, SHIELD_PACKS } from "./plans.js";
 
 describe("plan table (PLAN_V2 §3)", () => {
   it("matches the decided pricing", () => {
@@ -34,7 +34,9 @@ describe("costForAction", () => {
 
   it("rejects oversize snapshots instead of truncating", () => {
     expect(() => costForAction("full", { files: 301, bytes: 1000 })).toThrow(SnapshotTooLargeError);
-    expect(() => costForAction("full", { files: 10, bytes: 3 * 1024 * 1024 })).toThrow(SnapshotTooLargeError);
+    expect(() => costForAction("full", { files: 10, bytes: 3 * 1024 * 1024 })).toThrow(
+      SnapshotTooLargeError,
+    );
   });
 
   it("derives the USD budget from the Shield budget (1 Shield ≈ $0.05)", () => {

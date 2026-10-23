@@ -170,6 +170,8 @@ export const EvidenceItemSchema = z.object({
   line: z.number().int().positive(),
   message: z.string().min(1),
   pattern: z.string().min(1),
+  /** Route/function identity when the evidence belongs to a handler. */
+  route: z.string().optional(),
   source: z.enum(["ts-check", "sandbox-tool"]),
 });
 export type EvidenceItem = z.infer<typeof EvidenceItemSchema>;

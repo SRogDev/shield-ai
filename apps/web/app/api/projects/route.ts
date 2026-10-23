@@ -1,5 +1,5 @@
-import { errorResponse, json, requireUserId, serverEnv, service } from "@/lib/server";
 import { CreateProjectRequestSchema } from "@shield/shared";
+import { errorResponse, json, requireUserId, service } from "@/lib/server";
 
 export async function GET(req: Request): Promise<Response> {
   try {

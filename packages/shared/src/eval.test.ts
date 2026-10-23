@@ -1,8 +1,8 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { TsToolRunner, type SourceFileInput } from "./checks.js";
+import { type SourceFileInput, TsToolRunner } from "./checks.js";
 import type { Finding } from "./schemas.js";
 import { StubAiProvider } from "./stub-provider.js";
 import { runScanWorkflow } from "./workflow.js";
@@ -56,7 +56,9 @@ async function scanFixture(name: string, priorFindings: Finding[] = []) {
   );
 }
 
-const manifest = JSON.parse(readFileSync(join(EVAL_DIR, "expected.json"), "utf8")) as ExpectedManifest;
+const manifest = JSON.parse(
+  readFileSync(join(EVAL_DIR, "expected.json"), "utf8"),
+) as ExpectedManifest;
 
 describe("eval: seeded fixtures (stub provider, pipeline mechanics)", () => {
   it("recalls every seeded CWE in the vulnerable fixture", async () => {

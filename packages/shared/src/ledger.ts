@@ -38,7 +38,9 @@ export class ShieldLedger {
   private byKey = new Map<string, { entry: LedgerEntry; fingerprint: EntryFingerprint }>();
   private seq = 0;
 
-  private append(input: Omit<LedgerEntry, "id" | "createdAt"> & { createdAt?: string }): LedgerEntry {
+  private append(
+    input: Omit<LedgerEntry, "id" | "createdAt"> & { createdAt?: string },
+  ): LedgerEntry {
     const fingerprint: EntryFingerprint = {
       userId: input.userId,
       kind: input.kind,

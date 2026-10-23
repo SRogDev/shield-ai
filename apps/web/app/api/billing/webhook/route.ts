@@ -1,10 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import {
-  PLANS,
-  PolarWebhookEventSchema,
-  SHIELD_PACKS,
-  assertConfigured,
-} from "@shield/shared";
+import { assertConfigured, PLANS, PolarWebhookEventSchema, SHIELD_PACKS } from "@shield/shared";
 import { errorResponse, json, serverEnv, service } from "@/lib/server";
 
 /**
@@ -74,7 +69,11 @@ export async function POST(req: Request): Promise<Response> {
           `${event.data.id}:${event.data.current_period_end ?? ""}`,
           event.data.current_period_end ?? null,
         );
-        return json({ applied: "subscription", plan: planId, shields: PLANS[planId].shieldsPerPeriod });
+        return json({
+          applied: "subscription",
+          plan: planId,
+          shields: PLANS[planId].shieldsPerPeriod,
+        });
       }
     }
     if (event.type === "order.paid" && event.data.product_id) {

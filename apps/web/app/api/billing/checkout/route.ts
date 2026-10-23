@@ -1,9 +1,4 @@
-import {
-  NotConfiguredError,
-  PLANS,
-  SHIELD_PACKS,
-  assertConfigured,
-} from "@shield/shared";
+import { assertConfigured, NotConfiguredError, PLANS, SHIELD_PACKS } from "@shield/shared";
 import { z } from "zod";
 import { errorResponse, json, requireUserId, serverEnv, service } from "@/lib/server";
 
@@ -58,7 +53,7 @@ export async function POST(req: Request): Promise<Response> {
     const label =
       body.product === "indie" || body.product === "builder"
         ? `${PLANS[body.product].name} plan`
-        : (SHIELD_PACKS.find((p) => p.id === body.product)?.shields ?? 0) + " Shields pack";
+        : `${SHIELD_PACKS.find((p) => p.id === body.product)?.shields ?? 0} Shields pack`;
     return json({ url: checkout.url, product: body.product, label });
   } catch (err) {
     return errorResponse(err);

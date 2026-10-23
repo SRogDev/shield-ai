@@ -1,6 +1,4 @@
-import { Sandbox } from "@vercel/sandbox";
 import {
-  NotConfiguredError,
   assertConfigured,
   type DeterministicToolRunner,
   type EvidenceItem,
@@ -8,12 +6,13 @@ import {
   type SourceFileInput,
   type ToolRunResult,
 } from "@shield/shared";
+import { Sandbox } from "@vercel/sandbox";
 
 /**
  * Vercel Sandbox tool runner (PLAN_V2 §6.4): runs real Linux security
  * tools (gitleaks / semgrep class) against the snapshot inside an
  * ephemeral microVM, capped at ~3 minutes. Requires Vercel credentials
- * (VERCEL_OIDC_TOKEN); without them it throws NotConfiguredError, which the
+ * (VERCEL_OIDC_TOKEN); without them assertConfigured throws, which the
  * CompositeToolRunner records as "unavailable" — output is never faked.
  * Secret values from tool output are never copied into evidence.
  */
@@ -77,7 +76,12 @@ export class SandboxToolRunner implements DeterministicToolRunner {
       } else {
         try {
           const parsed = JSON.parse(semgrepOut) as {
-            results?: { check_id?: string; path?: string; start?: { line?: number }; extra?: { message?: string } }[];
+            results?: {
+              check_id?: string;
+              path?: string;
+              start?: { line?: number };
+              extra?: { message?: string };
+            }[];
           };
           for (const r of parsed.results ?? []) {
             evidence.push({

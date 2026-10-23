@@ -1,10 +1,10 @@
 import {
   CompositeToolRunner,
   GatewayAiProvider,
+  HttpOsvClient,
   SHIELD_MAX_COGS_USD,
   StubAiProvider,
   StubOsvClient,
-  HttpOsvClient,
   TsToolRunner,
 } from "@shield/shared";
 import { SandboxToolRunner } from "./sandbox-runner";
@@ -29,8 +29,10 @@ export async function runAnalysisForScan(scanId: string): Promise<void> {
   const tools = new CompositeToolRunner([new TsToolRunner(osv), new SandboxToolRunner(env)]);
   const ai = env.AI_GATEWAY_API_KEY
     ? new GatewayAiProvider(env)
-    : (ctx: { files: { path: string; content: string }[]; evidence: import("@shield/shared").EvidenceItem[] }) =>
-        new StubAiProvider(ctx);
+    : (ctx: {
+        files: { path: string; content: string }[];
+        evidence: import("@shield/shared").EvidenceItem[];
+      }) => new StubAiProvider(ctx);
   const budgetUsd = svc.scanCostShields(scanId) * SHIELD_MAX_COGS_USD;
   await svc.runAnalysis(scanId, { ai, tools, budgetUsd });
 }

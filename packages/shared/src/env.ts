@@ -1,5 +1,10 @@
 import { NotConfiguredError } from "./errors.js";
-import { INTEGRATION_ENV_KEYS, type IntegrationName, type ServerEnv, ServerEnvSchema } from "./schemas.js";
+import {
+  INTEGRATION_ENV_KEYS,
+  type IntegrationName,
+  type ServerEnv,
+  ServerEnvSchema,
+} from "./schemas.js";
 
 /** Parse + validate server environment with Zod (PLAN_V2 §2). */
 export function parseServerEnv(source: Record<string, string | undefined>): ServerEnv {

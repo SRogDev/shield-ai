@@ -25,18 +25,66 @@ export interface StubContext {
   evidence: EvidenceItem[];
 }
 
-const CHECK_META: Record<string, { cwe: string; owasp: string[]; title: string; severity: Severity }> = {
-  "secret:private-key-block": { cwe: "CWE-798", owasp: ["LLM02:2025 Sensitive Information Disclosure"], title: "Private key committed to source", severity: "Critical" },
-  "secret:aws-access-key": { cwe: "CWE-798", owasp: ["LLM02:2025 Sensitive Information Disclosure"], title: "AWS access key in source", severity: "High" },
-  "secret:jwt-token": { cwe: "CWE-798", owasp: ["LLM02:2025 Sensitive Information Disclosure"], title: "Hardcoded JWT in source", severity: "High" },
-  "secret:generic-secret-assignment": { cwe: "CWE-798", owasp: ["LLM02:2025 Sensitive Information Disclosure"], title: "Hardcoded secret in source", severity: "High" },
-  "config:cors-wildcard": { cwe: "CWE-942", owasp: ["A05:2025 Security Misconfiguration"], title: "CORS allows any origin", severity: "Medium" },
-  "config:tls-verification-disabled": { cwe: "CWE-295", owasp: ["A02:2025 Cryptographic Failures"], title: "TLS certificate verification disabled", severity: "High" },
-  "config:debug-enabled": { cwe: "CWE-489", owasp: ["A05:2025 Security Misconfiguration"], title: "Debug mode enabled", severity: "Low" },
-  "ast:missing-auth-check": { cwe: "CWE-862", owasp: ["A01:2025 Broken Access Control"], title: "Route handler without an authentication check", severity: "High" },
+const CHECK_META: Record<
+  string,
+  { cwe: string; owasp: string[]; title: string; severity: Severity }
+> = {
+  "secret:private-key-block": {
+    cwe: "CWE-798",
+    owasp: ["LLM02:2025 Sensitive Information Disclosure"],
+    title: "Private key committed to source",
+    severity: "Critical",
+  },
+  "secret:aws-access-key": {
+    cwe: "CWE-798",
+    owasp: ["LLM02:2025 Sensitive Information Disclosure"],
+    title: "AWS access key in source",
+    severity: "High",
+  },
+  "secret:jwt-token": {
+    cwe: "CWE-798",
+    owasp: ["LLM02:2025 Sensitive Information Disclosure"],
+    title: "Hardcoded JWT in source",
+    severity: "High",
+  },
+  "secret:generic-secret-assignment": {
+    cwe: "CWE-798",
+    owasp: ["LLM02:2025 Sensitive Information Disclosure"],
+    title: "Hardcoded secret in source",
+    severity: "High",
+  },
+  "config:cors-wildcard": {
+    cwe: "CWE-942",
+    owasp: ["A05:2025 Security Misconfiguration"],
+    title: "CORS allows any origin",
+    severity: "Medium",
+  },
+  "config:tls-verification-disabled": {
+    cwe: "CWE-295",
+    owasp: ["A02:2025 Cryptographic Failures"],
+    title: "TLS certificate verification disabled",
+    severity: "High",
+  },
+  "config:debug-enabled": {
+    cwe: "CWE-489",
+    owasp: ["A05:2025 Security Misconfiguration"],
+    title: "Debug mode enabled",
+    severity: "Low",
+  },
+  "ast:missing-auth-check": {
+    cwe: "CWE-862",
+    owasp: ["A01:2025 Broken Access Control"],
+    title: "Route handler without an authentication check",
+    severity: "High",
+  },
 };
 
-function metaFor(evidence: EvidenceItem): { cwe: string; owasp: string[]; title: string; severity: Severity } {
+function metaFor(evidence: EvidenceItem): {
+  cwe: string;
+  owasp: string[];
+  title: string;
+  severity: Severity;
+} {
   const exact = CHECK_META[evidence.checkId];
   if (exact) return exact;
   if (evidence.checkId.startsWith("dependency:")) {
@@ -47,7 +95,12 @@ function metaFor(evidence: EvidenceItem): { cwe: string; owasp: string[]; title:
       severity: "Medium",
     };
   }
-  return { cwe: "CWE-20", owasp: ["A05:2025 Security Misconfiguration"], title: evidence.message, severity: "Low" };
+  return {
+    cwe: "CWE-20",
+    owasp: ["A05:2025 Security Misconfiguration"],
+    title: evidence.message,
+    severity: "Low",
+  };
 }
 
 /** Mechanical evidence → candidate conversion (also used for `quick` scans). */

@@ -1,4 +1,4 @@
-import { MCP_TOOLS, UnauthorizedError, callMcpTool } from "@shield/shared";
+import { callMcpTool, MCP_TOOLS, UnauthorizedError } from "@shield/shared";
 import { z } from "zod";
 import { errorResponse, json, requireUserId, service } from "@/lib/server";
 
@@ -47,7 +47,9 @@ export async function POST(req: Request): Promise<Response> {
       });
     }
     if (body.method === "tools/call") {
-      const params = z.object({ name: z.string(), arguments: z.unknown().optional() }).parse(body.params);
+      const params = z
+        .object({ name: z.string(), arguments: z.unknown().optional() })
+        .parse(body.params);
       const result = callMcpTool(service(), userId, params.name, params.arguments ?? {});
       return rpcResult(body.id, {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],

@@ -84,7 +84,12 @@ describe("scan lifecycle and entitlement", () => {
     const { svc, user } = makeService();
     const project = svc.createProject(user.id, "app");
     const files = manifestFor("export const x = 1;");
-    const req = { projectId: project.id, action: "full" as const, files, idempotencyKey: "req-0001-abcd" };
+    const req = {
+      projectId: project.id,
+      action: "full" as const,
+      files,
+      idempotencyKey: "req-0001-abcd",
+    };
     const first = svc.createScan(user.id, req);
     const second = svc.createScan(user.id, req);
     expect(second.scanId).toBe(first.scanId);
@@ -101,10 +106,20 @@ describe("scan lifecycle and entitlement", () => {
       size: 100,
     }));
     expect(() =>
-      svc.createScan(user.id, { projectId: project.id, action: "full", files: big, idempotencyKey: "req-big-0001" }),
+      svc.createScan(user.id, {
+        projectId: project.id,
+        action: "full",
+        files: big,
+        idempotencyKey: "req-big-0001",
+      }),
     ).not.toThrow(); // 12 Shields, balance 15: allowed
     expect(() =>
-      svc.createScan(user.id, { projectId: project.id, action: "full", files: big, idempotencyKey: "req-big-0002" }),
+      svc.createScan(user.id, {
+        projectId: project.id,
+        action: "full",
+        files: big,
+        idempotencyKey: "req-big-0002",
+      }),
     ).toThrow(InsufficientShieldsError);
   });
 
@@ -195,8 +210,12 @@ describe("scan lifecycle and entitlement", () => {
 describe("polar grants", () => {
   it("applies a subscription grant once per period", () => {
     const { svc, user } = makeService();
-    expect(svc.applySubscriptionGrant(user.id, "indie", "2026-10", "2026-11-23T00:00:00Z")).toBe(true);
-    expect(svc.applySubscriptionGrant(user.id, "indie", "2026-10", "2026-11-23T00:00:00Z")).toBe(false);
+    expect(svc.applySubscriptionGrant(user.id, "indie", "2026-10", "2026-11-23T00:00:00Z")).toBe(
+      true,
+    );
+    expect(svc.applySubscriptionGrant(user.id, "indie", "2026-10", "2026-11-23T00:00:00Z")).toBe(
+      false,
+    );
     expect(svc.balance(user.id)).toBe(15 + 40);
   });
 

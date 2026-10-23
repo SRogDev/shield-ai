@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 function ApproveForm() {
   const params = useSearchParams();
@@ -58,9 +58,9 @@ function ApproveForm() {
       <div className="card">
         <h1 style={{ marginTop: 0, fontSize: "1.5rem" }}>Approve a CLI device</h1>
         <p style={{ color: "var(--muted)" }}>
-          Enter the user code shown by <code>shield login</code>. Approving gives that
-          terminal a scoped, revocable token for your account — it never proves entitlement
-          by itself; the backend still checks your plan and Shield balance on every scan.
+          Enter the user code shown by <code>shield login</code>. Approving gives that terminal a
+          scoped, revocable token for your account — it never proves entitlement by itself; the
+          backend still checks your plan and Shield balance on every scan.
         </p>
         <input
           value={code}
@@ -69,10 +69,16 @@ function ApproveForm() {
           style={{ width: "100%", marginBottom: "0.75rem", textTransform: "uppercase" }}
         />
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button className="primary" onClick={() => void call("/api/device/approve")}>
+          <button
+            type="button"
+            className="primary"
+            onClick={() => void call("/api/device/approve")}
+          >
             Approve device
           </button>
-          <button onClick={() => void call("/api/device/deny")}>Deny</button>
+          <button type="button" onClick={() => void call("/api/device/deny")}>
+            Deny
+          </button>
         </div>
         {needsAuth && (
           <form onSubmit={signIn} style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
@@ -96,7 +102,13 @@ function ApproveForm() {
 
 export default function ApprovePage() {
   return (
-    <Suspense fallback={<div className="container" style={{ paddingTop: "2.5rem" }}>Loading…</div>}>
+    <Suspense
+      fallback={
+        <div className="container" style={{ paddingTop: "2.5rem" }}>
+          Loading…
+        </div>
+      }
+    >
       <ApproveForm />
     </Suspense>
   );

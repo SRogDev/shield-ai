@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { ForbiddenError, UnauthorizedError } from "./errors.js";
 import { sha256Hex } from "./fingerprint.js";
 import { ShieldLedger } from "./ledger.js";
-import { PLANS, type PlanDefinition, costForAction } from "./plans.js";
+import { costForAction, PLANS, type PlanDefinition } from "./plans.js";
 import type {
   CreateScanRequest,
   Finding,
@@ -87,7 +87,12 @@ export class ShieldService {
   readonly ledger = new ShieldLedger();
   private users = new Map<string, UserRecord>();
   private projects = new Map<string, Project>();
-  private repoLinks: { ownerId: string; projectId: string; repoName: string; remoteUrlHash: string | null }[] = [];
+  private repoLinks: {
+    ownerId: string;
+    projectId: string;
+    repoName: string;
+    remoteUrlHash: string | null;
+  }[] = [];
   private deviceCodes = new Map<string, DeviceCodeRecord>();
   private userCodes = new Map<string, string>(); // userCode -> deviceCodeHash
   private cliTokens = new Map<string, CliTokenRecord>(); // tokenHash -> record
@@ -132,7 +137,11 @@ export class ShieldService {
       singleProject: PLANS[user.planId].maxProjects === 1,
       linkedRepos: this.repoLinks
         .filter((l) => l.ownerId === userId)
-        .map((l) => ({ repoName: l.repoName, remoteUrlHash: l.remoteUrlHash, projectId: l.projectId })),
+        .map((l) => ({
+          repoName: l.repoName,
+          remoteUrlHash: l.remoteUrlHash,
+          projectId: l.projectId,
+        })),
     };
   }
 
@@ -161,7 +170,12 @@ export class ShieldService {
     return project;
   }
 
-  linkRepo(userId: string, projectId: string, repoName: string, remoteUrlHash: string | null): void {
+  linkRepo(
+    userId: string,
+    projectId: string,
+    repoName: string,
+    remoteUrlHash: string | null,
+  ): void {
     this.getOwnedProject(userId, projectId);
     const existing = this.repoLinks.findIndex(
       (l) => l.ownerId === userId && l.repoName === repoName && l.remoteUrlHash === remoteUrlHash,
@@ -191,7 +205,12 @@ export class ShieldService {
   }
 
   /* ------------------------------ Device flow ----------------------------- */
-  startDeviceFlow(): { deviceCode: string; userCode: string; expiresInSec: number; intervalSec: number } {
+  startDeviceFlow(): {
+    deviceCode: string;
+    userCode: string;
+    expiresInSec: number;
+    intervalSec: number;
+  } {
     const deviceCode = randomBytes(32).toString("hex");
     const userCode = randomUserCode();
     const record: DeviceCodeRecord = {
@@ -212,7 +231,8 @@ export class ShieldService {
     this.getUser(userId);
     const hash = this.userCodes.get(userCode.toUpperCase());
     const record = hash ? this.deviceCodes.get(hash) : undefined;
-    if (!record || record.expiresAt < Date.now()) throw new ForbiddenError("device code is invalid or expired");
+    if (!record || record.expiresAt < Date.now())
+      throw new ForbiddenError("device code is invalid or expired");
     record.status = "approved";
     record.userId = userId;
     record.cliToken = this.issueCliToken(userId);
@@ -224,7 +244,10 @@ export class ShieldService {
     if (record) record.status = "denied";
   }
 
-  pollDevice(deviceCode: string): { status: "pending" | "approved" | "denied" | "expired"; token?: string } {
+  pollDevice(deviceCode: string): {
+    status: "pending" | "approved" | "denied" | "expired";
+    token?: string;
+  } {
     const record = this.deviceCodes.get(sha256Hex(deviceCode));
     if (!record || record.expiresAt < Date.now()) return { status: "expired" };
     if (record.status === "approved" && record.cliToken) {
@@ -314,7 +337,11 @@ export class ShieldService {
     return scan;
   }
 
-  uploadFile(userId: string, scanId: string, input: { path: string; sha256: string; contentBase64: string }): { acked: true } {
+  uploadFile(
+    userId: string,
+    scanId: string,
+    input: { path: string; sha256: string; contentBase64: string },
+  ): { acked: true } {
     const scan = this.getOwnedScan(userId, scanId);
     const manifestEntry = scan.manifest.find((f) => f.path === input.path);
     if (!manifestEntry) throw new ForbiddenError("file is not part of this scan's manifest");
@@ -424,7 +451,10 @@ export class ShieldService {
     return [...this.tasks.values()].filter((t) => projectFindingIds.has(t.findingId));
   }
 
-  verificationStatus(userId: string, projectId: string): { findingId: string; status: VerificationStatus }[] {
+  verificationStatus(
+    userId: string,
+    projectId: string,
+  ): { findingId: string; status: VerificationStatus }[] {
     return this.listFindings(userId, projectId).map((f) => ({
       findingId: f.id,
       status: f.verificationStatus,
@@ -433,7 +463,12 @@ export class ShieldService {
 
   /* --------------------------------- Polar -------------------------------- */
   /** Returns true if the event was newly applied; false if it was a duplicate. */
-  applySubscriptionGrant(userId: string, planId: PlanId, periodKey: string, periodEnd: string | null): boolean {
+  applySubscriptionGrant(
+    userId: string,
+    planId: PlanId,
+    periodKey: string,
+    periodEnd: string | null,
+  ): boolean {
     const key = `sub:${userId}:${periodKey}`;
     const before = this.ledger.history(userId).length;
     this.setPlan(userId, planId);

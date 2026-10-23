@@ -70,7 +70,12 @@ export interface WorkflowDeps {
    * (the stub provider derives its deterministic answers from the gathered
    * evidence, so it is built after stage 2).
    */
-  ai: AiProvider | ((ctx: { files: SourceFileInput[]; evidence: import("./schemas.js").EvidenceItem[] }) => AiProvider);
+  ai:
+    | AiProvider
+    | ((ctx: {
+        files: SourceFileInput[];
+        evidence: import("./schemas.js").EvidenceItem[];
+      }) => AiProvider);
   tools: DeterministicToolRunner;
   /** Hard USD budget for AI spend across stages (from the Shield cost). */
   budgetUsd: number;
@@ -87,10 +92,7 @@ export interface WorkflowResult {
   stagesRun: string[];
 }
 
-async function runStage<T>(
-  stage: string,
-  fn: () => Promise<T>,
-): Promise<T> {
+async function runStage<T>(stage: string, fn: () => Promise<T>): Promise<T> {
   try {
     return await fn();
   } catch (err) {
@@ -236,7 +238,9 @@ export async function runScanWorkflow(
       ),
     );
     spend("understand", understandRes.usage.costUsd, understandRes.usage.synthetic);
-    understanding = parseStage("understand", () => ProjectUnderstandingSchema.parse(understandRes.data));
+    understanding = parseStage("understand", () =>
+      ProjectUnderstandingSchema.parse(understandRes.data),
+    );
     stagesRun.push("1-understand-project");
 
     /* Stage 3 — identify risks from evidence. */
@@ -253,7 +257,10 @@ export async function runScanWorkflow(
       ),
     );
     spend("identify", identifyRes.usage.costUsd, identifyRes.usage.synthetic);
-    const candidates = parseStage("identify", () => IdentifyOutSchema.parse(identifyRes.data).candidates);
+    const candidates = parseStage(
+      "identify",
+      () => IdentifyOutSchema.parse(identifyRes.data).candidates,
+    );
     stagesRun.push("3-identify-risks");
 
     /* Stage 4 — evaluate findings (validity, severity, confidence). */
@@ -270,7 +277,9 @@ export async function runScanWorkflow(
       ),
     );
     spend("evaluate", evaluateRes.usage.costUsd, evaluateRes.usage.synthetic);
-    const evaluated = parseStage("evaluate", () => EvaluateOutSchema.parse(evaluateRes.data).evaluated.filter((e) => e.valid));
+    const evaluated = parseStage("evaluate", () =>
+      EvaluateOutSchema.parse(evaluateRes.data).evaluated.filter((e) => e.valid),
+    );
     stagesRun.push("4-evaluate-findings");
 
     /* Stage 5 — explain findings. */
@@ -286,7 +295,10 @@ export async function runScanWorkflow(
       ),
     );
     spend("explain", explainRes.usage.costUsd, explainRes.usage.synthetic);
-    const explained = parseStage("explain", () => ExplainOutSchema.parse(explainRes.data).explained);
+    const explained = parseStage(
+      "explain",
+      () => ExplainOutSchema.parse(explainRes.data).explained,
+    );
     stagesRun.push("5-explain-findings");
 
     for (const item of explained) newFindings.push(buildFinding(item));

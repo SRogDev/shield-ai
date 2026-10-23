@@ -18,7 +18,8 @@ describe("findingFingerprint (PLAN_V2 §9.2)", () => {
   it("is stable under whitespace and comment changes", () => {
     const reformatted = {
       ...base,
-      pattern: "// fetch the order\nexport async function GET(req) {\n  return db.orders.find(id)\n}",
+      pattern:
+        "// fetch the order\nexport async function GET(req) {\n  return db.orders.find(id)\n}",
     };
     expect(findingFingerprint(reformatted)).toBe(findingFingerprint(base));
   });
@@ -26,14 +27,19 @@ describe("findingFingerprint (PLAN_V2 §9.2)", () => {
   it("changes when the vulnerable pattern actually changes (a fix)", () => {
     const fixed = {
       ...base,
-      pattern: "export async function GET(req) { const s = await auth(); return db.orders.find(id, s.userId) }",
+      pattern:
+        "export async function GET(req) { const s = await auth(); return db.orders.find(id, s.userId) }",
     };
     expect(findingFingerprint(fixed)).not.toBe(findingFingerprint(base));
   });
 
   it("differs across files, routes, and categories", () => {
-    expect(findingFingerprint({ ...base, filePath: "app/api/users/route.ts" })).not.toBe(findingFingerprint(base));
-    expect(findingFingerprint({ ...base, routeIdentity: "POST /api/orders" })).not.toBe(findingFingerprint(base));
+    expect(findingFingerprint({ ...base, filePath: "app/api/users/route.ts" })).not.toBe(
+      findingFingerprint(base),
+    );
+    expect(findingFingerprint({ ...base, routeIdentity: "POST /api/orders" })).not.toBe(
+      findingFingerprint(base),
+    );
     expect(findingFingerprint({ ...base, cwe: "CWE-89" })).not.toBe(findingFingerprint(base));
   });
 

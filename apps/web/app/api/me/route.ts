@@ -1,6 +1,5 @@
-import { errorResponse, json, requireUserId, serverEnv, service } from "@/lib/server";
 import { PLANS } from "@shield/shared";
-import { integrationStatus } from "@/lib/server";
+import { errorResponse, integrationStatus, json, requireUserId, service } from "@/lib/server";
 
 export async function GET(req: Request): Promise<Response> {
   try {

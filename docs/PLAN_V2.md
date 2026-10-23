@@ -118,12 +118,11 @@ shown to the user before confirmation (CLI preview and web UI).
 Internal budget: **1 Shield = at most ~$0.05 real COGS**, enforced by
 per-action token/cost budgets in the workflow **[Default]**.
 
-| Plan | Price | Shields | Projects | Notes |
-|---|---|---|---|---|
-| Free trial | $0 | **15, one-time** (not monthly) | 1 | No card required |
-| Indie | **$9/mo** | **40 / month** | 1 | Single-project |
-| Builder | **$19/mo** | **100 / month** | Multiple | Multi-project |
-
+| Plan       | Price      | Shields                        | Projects | Notes            |
+| ---------- | ---------- | ------------------------------ | -------- | ---------------- |
+| Free trial | $0         | **15, one-time** (not monthly) | 1        | No card required |
+| Indie      | **$9/mo**  | **40 / month**                 | 1        | Single-project   |
+| Builder    | **$19/mo** | **100 / month**                | Multiple | Multi-project    |
 - Subscription Shields **expire at month end** (no rollover).
 - **Shield packs** (pay-as-you-go): **30 Shields / $10**, **100 Shields / $29**.
   Pack Shields **never expire**. **No auto-recharge, ever**, without the
@@ -134,13 +133,13 @@ per-action token/cost budgets in the workflow **[Default]**.
 
 ### Action costs (Shields) **[Default, decided 2026-10-23]**
 
-| Action | Cost | Definition |
-|---|---|---|
-| Quick deterministic scan | 1 | Deterministic checks only, no AI stages |
-| Verify one finding | 1 | Targeted re-check of a single finding |
-| Incremental rescan | 3 | Changed files only (by SHA-256 diff vs last scan) |
-| Full scan — standard | 5 | ≤ 100 files and ≤ 500 KB of selected text |
-| Full scan — large | 12 | ≤ 300 files and ≤ 2 MB of selected text |
+| Action                   | Cost | Definition                                        |
+| ------------------------ | ---- | ------------------------------------------------- |
+| Quick deterministic scan | 1    | Deterministic checks only, no AI stages           |
+| Verify one finding       | 1    | Targeted re-check of a single finding             |
+| Incremental rescan       | 3    | Changed files only (by SHA-256 diff vs last scan) |
+| Full scan — standard     | 5    | ≤ 100 files and ≤ 500 KB of selected text         |
+| Full scan — large        | 12   | ≤ 300 files and ≤ 2 MB of selected text           |
 
 Snapshots above the large tier are rejected with a clear error in the MVP
 (no silent truncation).
@@ -233,19 +232,18 @@ is a `"use step"` function with explicit input, output, and failure
 behavior. Steps retry on transient failure; a failed stage fails the scan
 honestly (never a "completed" scan).
 
-| # | Stage | Kind | Output |
-|---|---|---|---|
-| 1 | Understand the project | AI (cheap) | Architecture, languages, frameworks, trust boundaries, AI features |
-| 2 | Gather evidence | Deterministic + Sandbox | Selected source/config, deterministic check results, tool output |
-| 3 | Identify risks | AI (cheap) | Candidate findings from concrete evidence |
-| 4 | Evaluate findings | AI (strong) | Validity, severity, confidence, false-positive filtering |
-| 5 | Explain findings | AI (cheap) | Problem, evidence, affected component, realistic consequences |
-| 6 | Create correction plan | AI (cheap) | Specific remediation tasks per finding |
-| 7 | Verify corrections | Mixed | For rescans: match findings by fingerprint (§9.2), mark resolved/open |
-| 8 | Record results | Deterministic | Persist findings, tasks, verification status, minimal metadata; debit ledger |
+| #   | Stage                  | Kind                    | Output                                                                       |
+| --- | ---------------------- | ----------------------- | ---------------------------------------------------------------------------- |
+| 1   | Understand the project | AI (cheap)              | Architecture, languages, frameworks, trust boundaries, AI features           |
+| 2   | Gather evidence        | Deterministic + Sandbox | Selected source/config, deterministic check results, tool output             |
+| 3   | Identify risks         | AI (cheap)              | Candidate findings from concrete evidence                                    |
+| 4   | Evaluate findings      | AI (strong)             | Validity, severity, confidence, false-positive filtering                     |
+| 5   | Explain findings       | AI (cheap)              | Problem, evidence, affected component, realistic consequences                |
+| 6   | Create correction plan | AI (cheap)              | Specific remediation tasks per finding                                       |
+| 7   | Verify corrections     | Mixed                   | For rescans: match findings by fingerprint (§9.2), mark resolved/open        |
+| 8   | Record results         | Deterministic           | Persist findings, tasks, verification status, minimal metadata; debit ledger |
 
 Rules:
-
 - Structured model output is **validated with Zod before it is trusted**.
   Malformed output fails the step, not the data model.
 - **Budgets are hard:** per-stage token caps derived from the action's
@@ -265,7 +263,6 @@ Storage, or any application database. See the honest privacy wording in §10.
 ### 6.2 Deterministic checks (in-step, TypeScript)
 
 Implemented in `packages/shared`, running inside workflow steps:
-
 - Secret patterns + entropy heuristics over text content.
 - Lockfile parsing → dependency inventory → OSV-shaped vulnerability
   lookup contract (the lookup client is implemented against the OSV API
@@ -313,7 +310,6 @@ server-side checks enforce ownership on every query.
 Supabase Auth has no native device grant, so the device protocol is built
 on top of it — Supabase provides identity and storage; the backend runs
 the protocol:
-
 1. `shield login` asks the backend to create a device session
    (`device_codes` row: device code (hashed), user code, expiry, poll
    interval).
@@ -349,7 +345,6 @@ are prevented by the ledger's unique idempotency keys.
 
 A thin local adapter. It is **not** an AI agent and contains **no** analysis
 workflow. Exactly three top-level commands **[from v1, kept]**:
-
 - `shield login`
 - `shield scan [path]` (defaults to the current directory)
 - `shield logout`
@@ -437,7 +432,6 @@ findings/tasks persistence, status reporting.
 ## 9. Findings and remediation data
 
 Every finding contains, where applicable:
-
 - Stable identifier and a **fingerprint** (§9.2).
 - Clear title and concise description.
 - **Severity** — exactly one of `Critical | High | Medium | Low | Info`
@@ -517,7 +511,6 @@ system as the CLI (§7.2) — an MCP client presents a user-scoped token;
 every operation enforces project ownership and tenant isolation.
 
 Read-only tool surface (names/schemas defined by Zod in `packages/shared`):
-
 - `list_projects` — the user's projects.
 - `list_findings` — findings for a project/scan, with severity/confidence.
 - `get_finding` — one finding with evidence and correction plan.
@@ -538,7 +531,6 @@ ui-ux-pro-max design pass run at build time; **Roger's decisions win**
 where they conflict with the tool's generic output (the tool suggested
 indigo + Plus Jakarta Sans + motion-heavy style; the brand decisions
 below override all three):
-
 - **Color:** blue primary, family ratified around **#2563EB**; calm slate
   neutrals; severity colors are semantic (red/amber/…) and are not brand.
 - **Typography:** **Inter** for identity, headings, UI, and content.
@@ -683,23 +675,23 @@ and deployment are documented.
 
 ## 20. Decisions log (this compilation)
 
-| Decision | Source |
-|---|---|
-| Greenfield repo, not an existing codebase | Roger, round 1 |
-| Monorepo; Zod everywhere; models via Vercel AI Gateway | Roger, initial brief |
-| Engine: Vercel Workflow DevKit; code travels as workflow data (KBs, no DB) | Roger, round 1 |
-| Billing: Polar; $9 / $19 / pay-as-you-go packs; unit = Shields | Roger, rounds 1–2 |
-| Shield quantities & action costs; trial 15 one-time; packs 30/$10, 100/$29 | Builder, under Roger's "encárgate tú" |
-| Device flow built on Supabase (custom protocol, backend-issued CLI token) | Roger (asked feasibility), confirmed viable |
-| GitHub App documented, built last, after account restoration | Roger, round 1 |
-| CLI project resolution prompt; single-project users never asked | Roger, round 2 |
-| Finding fingerprint ≠ file hash (category+path+function+pattern hash) | Builder, explained round 2 |
-| Taxonomy: OWASP LLM Top 10 + CWE (+ web Top 10 mapping) | Roger, round 1 |
-| Severity scale Critical/High/Medium/Low/Info + separate confidence | Builder default |
-| Deterministic tools: TS checks + Vercel Sandbox (in, standard) | Roger, rounds 2–3 |
-| Models: economical, cybersecurity-strong, chosen by eval benchmark | Roger, round 3 |
-| Single-user MVP | Roger, round 1 |
-| MCP remote (hosted HTTP) | Roger, round 1 |
-| `.env*` always excluded in the CLI | Roger, round 1 |
-| Design system: blue (#2563EB family), Inter, tagline, no 3D, no hacker aesthetics | Roger, recovered Oct 19 + round 3 |
-| Logo: original minimal shield+AI mark; stock-style icons rejected | Roger, round 3 |
+| Decision                                                                          | Source                                      |
+| --------------------------------------------------------------------------------- | ------------------------------------------- |
+| Greenfield repo, not an existing codebase                                         | Roger, round 1                              |
+| Monorepo; Zod everywhere; models via Vercel AI Gateway                            | Roger, initial brief                        |
+| Engine: Vercel Workflow DevKit; code travels as workflow data (KBs, no DB)        | Roger, round 1                              |
+| Billing: Polar; $9 / $19 / pay-as-you-go packs; unit = Shields                    | Roger, rounds 1–2                           |
+| Shield quantities & action costs; trial 15 one-time; packs 30/$10, 100/$29        | Builder, under Roger's "encárgate tú"       |
+| Device flow built on Supabase (custom protocol, backend-issued CLI token)         | Roger (asked feasibility), confirmed viable |
+| GitHub App documented, built last, after account restoration                      | Roger, round 1                              |
+| CLI project resolution prompt; single-project users never asked                   | Roger, round 2                              |
+| Finding fingerprint ≠ file hash (category+path+function+pattern hash)             | Builder, explained round 2                  |
+| Taxonomy: OWASP LLM Top 10 + CWE (+ web Top 10 mapping)                           | Roger, round 1                              |
+| Severity scale Critical/High/Medium/Low/Info + separate confidence                | Builder default                             |
+| Deterministic tools: TS checks + Vercel Sandbox (in, standard)                    | Roger, rounds 2–3                           |
+| Models: economical, cybersecurity-strong, chosen by eval benchmark                | Roger, round 3                              |
+| Single-user MVP                                                                   | Roger, round 1                              |
+| MCP remote (hosted HTTP)                                                          | Roger, round 1                              |
+| `.env*` always excluded in the CLI                                                | Roger, round 1                              |
+| Design system: blue (#2563EB family), Inter, tagline, no 3D, no hacker aesthetics | Roger, recovered Oct 19 + round 3           |
+| Logo: original minimal shield+AI mark; stock-style icons rejected                 | Roger, round 3                              |

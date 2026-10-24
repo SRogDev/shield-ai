@@ -194,9 +194,8 @@ pub fn build_snapshot(root: &Path) -> Result<Snapshot> {
             .collect::<Vec<_>>()
             .join("/");
         // The single read of this file for the whole scan (§8.3).
-        let bytes = std::fs::read(entry.path()).map_err(|e| {
-            Error::new(format!("could not read {}: {e}", entry.path().display()))
-        })?;
+        let bytes = std::fs::read(entry.path())
+            .map_err(|e| Error::new(format!("could not read {}: {e}", entry.path().display())))?;
         if !is_text_bytes(&bytes) {
             excluded.binary_files += 1;
             continue;
@@ -314,7 +313,7 @@ mod tests {
         assert!(is_text_bytes("héllo wörld".as_bytes()));
         assert!(is_text_bytes(b""));
         // NUL byte in the first 8 KB -> binary.
-        assert!(!is_text_bytes(b"PK\x03\x04rest"));
+        assert!(!is_text_bytes(b"PK\x03\x04\x00rest"));
         assert!(!is_text_bytes(&[b'a', 0, b'b']));
         // Invalid UTF-8 without any NUL -> binary.
         assert!(!is_text_bytes(&[0xff, 0xfe, b'a']));

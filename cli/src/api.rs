@@ -105,6 +105,23 @@ struct CreateScanRequest {
     project_id: String,
     action: String,
     files: Vec<FileManifestEntry>,
+    /// Required by the backend contract (@shield/shared CreateScanRequest):
+    /// retries of THIS invocation reuse the same key so the server can
+    /// deduplicate the scan and the Shield debit.
+    idempotency_key: String,
+}
+
+/// One key per scan invocation: unique across invocations (time + pid),
+/// stable across retries within the invocation (derived once here).
+fn new_idempotency_key(project_id: &str, files: &[FileManifestEntry]) -> String {
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    let first_hash = files.first().map(|f| f.sha256.as_str()).unwrap_or("");
+    let material = format!("{project_id}:{nanos}:{}:{first_hash}", std::process::id());
+    let digest = crate::files::sha256_hex(material.as_bytes());
+    format!("cli-{}", &digest[..32])
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -197,23 +214,53 @@ impl ApiClient {
         body: Option<serde_json::Value>,
     ) -> Result<RawResponse> {
         let url = self.url(path);
-        let mut builder = match method {
-            "GET" => self.agent.get(&url),
-            "POST" => self.agent.post(&url),
-            "PUT" => self.agent.put(&url),
-            other => return Err(Error::new(format!("unsupported HTTP method {other}"))),
+        let auth = token.map(|t| format!("Bearer {t}"));
+        // ureq types body-less and body-carrying request builders
+        // differently, so each method dispatches separately.
+        let sent = match (method, &body) {
+            ("GET", _) => {
+                let mut builder = self.agent.get(&url);
+                if let Some(auth) = &auth {
+                    builder = builder.header("Authorization", auth);
+                }
+                builder.call()
+            }
+            ("POST", Some(value)) => {
+                let mut builder = self.agent.post(&url);
+                if let Some(auth) = &auth {
+                    builder = builder.header("Authorization", auth);
+                }
+                builder.send_json(value)
+            }
+            ("PUT", Some(value)) => {
+                let mut builder = self.agent.put(&url);
+                if let Some(auth) = &auth {
+                    builder = builder.header("Authorization", auth);
+                }
+                builder.send_json(value)
+            }
+            ("POST" | "PUT", None) => {
+                // All Shield POST/PUT endpoints accept an empty JSON
+                // object; call sites pass a body, this is a safeguard.
+                let empty = serde_json::json!({});
+                let mut builder = if method == "POST" {
+                    self.agent.post(&url)
+                } else {
+                    self.agent.put(&url)
+                };
+                if let Some(auth) = &auth {
+                    builder = builder.header("Authorization", auth);
+                }
+                builder.send_json(&empty)
+            }
+            (other, _) => {
+                return Err(Error::new(format!(
+                    "unsupported HTTP method {other} for Shield API"
+                )))
+            }
         };
-        if let Some(token) = token {
-            builder = builder.header("Authorization", &format!("Bearer {token}"));
-        }
-        let mut response = match body {
-            Some(value) => builder
-                .send_json(&value)
-                .map_err(|e| Error::retryable(format!("network error contacting Shield: {e}")))?,
-            None => builder
-                .call()
-                .map_err(|e| Error::retryable(format!("network error contacting Shield: {e}")))?,
-        };
+        let mut response =
+            sent.map_err(|e| Error::retryable(format!("network error contacting Shield: {e}")))?;
         let status = response.status().as_u16();
         let body = response
             .body_mut()
@@ -243,7 +290,12 @@ impl ApiClient {
     // -- Device flow (PLAN_V2 §7.2) ----------------------------------------
 
     pub fn device_start(&self) -> Result<DeviceStartResponse> {
-        self.request_json("POST", "/api/cli/device/start", None, Some(serde_json::json!({})))
+        self.request_json(
+            "POST",
+            "/api/cli/device/start",
+            None,
+            Some(serde_json::json!({})),
+        )
     }
 
     pub fn device_poll(&self, device_code: &str) -> Result<PollOutcome> {
@@ -270,7 +322,12 @@ impl ApiClient {
 
     /// Best-effort server-side token revocation on logout.
     pub fn logout(&self, token: &str) -> Result<()> {
-        let raw = self.request("POST", "/api/cli/logout", Some(token), Some(serde_json::json!({})))?;
+        let raw = self.request(
+            "POST",
+            "/api/cli/logout",
+            Some(token),
+            Some(serde_json::json!({})),
+        )?;
         if (200..300).contains(&raw.status) {
             Ok(())
         } else {
@@ -330,6 +387,7 @@ impl ApiClient {
             project_id: project_id.to_string(),
             action: action.to_string(),
             files: files.to_vec(),
+            idempotency_key: new_idempotency_key(project_id, files),
         };
         self.request_json(
             "POST",
@@ -402,9 +460,9 @@ fn http_error(status: u16, body: &str) -> Error {
             }
         });
     let message = match status {
-        401 | 403 => format!(
-            "authentication failed (HTTP {status}): {detail} — try `shield login` again"
-        ),
+        401 | 403 => {
+            format!("authentication failed (HTTP {status}): {detail} — try `shield login` again")
+        }
         _ => format!("Shield server error (HTTP {status}): {detail}"),
     };
     if status >= 500 {

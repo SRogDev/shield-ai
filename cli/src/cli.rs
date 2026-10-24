@@ -180,12 +180,8 @@ pub fn run_scan(
         .load()?
         .ok_or_else(|| Error::new("not logged in — run `shield login` first"))?;
 
-    let root = std::fs::canonicalize(path).map_err(|e| {
-        Error::new(format!(
-            "cannot access scan path {}: {e}",
-            path.display()
-        ))
-    })?;
+    let root = std::fs::canonicalize(path)
+        .map_err(|e| Error::new(format!("cannot access scan path {}: {e}", path.display())))?;
     if !root.is_dir() {
         return Err(Error::new(format!(
             "scan path {} is not a directory",
@@ -326,7 +322,8 @@ pub fn upload_snapshot(
                     "Server is missing {} file(s); re-uploading…",
                     missing.len()
                 )?;
-                uploaded += upload_files(client, token, &scan_id, snapshot, &missing, sleeper, out)?;
+                uploaded +=
+                    upload_files(client, token, &scan_id, snapshot, &missing, sleeper, out)?;
             }
         }
     }

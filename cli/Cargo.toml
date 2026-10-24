@@ -3,7 +3,7 @@ name = "shield"
 version = "0.1.0"
 edition = "2021"
 description = "Shield AI CLI — scan a local project and upload it for security analysis. Security that lets you build."
-license = "MIT"
+license = "Elastic-2.0"
 
 [[bin]]
 name = "shield"

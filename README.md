@@ -66,6 +66,14 @@ Full setup, environment variables, and deployment notes:
 handoff: `docs/PROJECT_BRIEF.md`. GitHub App (final phase, not yet
 built): `docs/GITHUB_APP.md`.
 
+## License
+
+Elastic License 2.0 (see `LICENSE`). Shield AI is source-available, not
+open source: you may use, copy, and modify the software — including
+running your own instance for your own use — but you may not offer it to
+third parties as a hosted or managed service. Shield AI is a hosted
+product; no self-hosting guides or support are provided.
+
 ## Privacy, honestly
 
 Shield itself never persists your source code. Analysis runs on Vercel

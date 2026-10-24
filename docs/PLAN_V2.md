@@ -695,3 +695,5 @@ and deployment are documented.
 | `.env*` always excluded in the CLI                                                | Roger, round 1                              |
 | Design system: blue (#2563EB family), Inter, tagline, no 3D, no hacker aesthetics | Roger, recovered Oct 19 + round 3           |
 | Logo: original minimal shield+AI mark; stock-style icons rejected                 | Roger, round 3                              |
+| Public repo under Elastic License 2.0; only Roger may offer it commercially      | Roger, post-build note                      |
+| No self-hosting guides/support in the product (license permits it; product doesn't) | Roger, post-build clarification           |

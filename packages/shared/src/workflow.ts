@@ -94,6 +94,15 @@ async function runStage<T>(
   }
 }
 
+/** Zod validation failures are stage failures, never data (PLAN_V2 §6). */
+function parseStage<T>(stage: string, fn: () => T): T {
+  try {
+    return fn();
+  } catch (err) {
+    throw new StageFailedError(stage, err instanceof Error ? err.message : String(err));
+  }
+}
+
 export async function runScanWorkflow(
   input: WorkflowInput,
   deps: WorkflowDeps,
@@ -219,7 +228,7 @@ export async function runScanWorkflow(
       ),
     );
     spend("understand", understandRes.usage.costUsd, understandRes.usage.synthetic);
-    understanding = ProjectUnderstandingSchema.parse(understandRes.data);
+    understanding = parseStage("understand", () => ProjectUnderstandingSchema.parse(understandRes.data));
     stagesRun.push("1-understand-project");
 
     /* Stage 3 — identify risks from evidence. */
@@ -236,7 +245,7 @@ export async function runScanWorkflow(
       ),
     );
     spend("identify", identifyRes.usage.costUsd, identifyRes.usage.synthetic);
-    const candidates = IdentifyOutSchema.parse(identifyRes.data).candidates;
+    const candidates = parseStage("identify", () => IdentifyOutSchema.parse(identifyRes.data).candidates);
     stagesRun.push("3-identify-risks");
 
     /* Stage 4 — evaluate findings (validity, severity, confidence). */
@@ -253,7 +262,7 @@ export async function runScanWorkflow(
       ),
     );
     spend("evaluate", evaluateRes.usage.costUsd, evaluateRes.usage.synthetic);
-    const evaluated = EvaluateOutSchema.parse(evaluateRes.data).evaluated.filter((e) => e.valid);
+    const evaluated = parseStage("evaluate", () => EvaluateOutSchema.parse(evaluateRes.data).evaluated.filter((e) => e.valid));
     stagesRun.push("4-evaluate-findings");
 
     /* Stage 5 — explain findings. */
@@ -269,7 +278,7 @@ export async function runScanWorkflow(
       ),
     );
     spend("explain", explainRes.usage.costUsd, explainRes.usage.synthetic);
-    const explained = ExplainOutSchema.parse(explainRes.data).explained;
+    const explained = parseStage("explain", () => ExplainOutSchema.parse(explainRes.data).explained);
     stagesRun.push("5-explain-findings");
 
     for (const item of explained) newFindings.push(buildFinding(item));
@@ -287,7 +296,7 @@ export async function runScanWorkflow(
       ),
     );
     spend("plan", planRes.usage.costUsd, planRes.usage.synthetic);
-    const plan: CorrectionPlan = CorrectionPlanSchema.parse(planRes.data);
+    const plan: CorrectionPlan = parseStage("plan", () => CorrectionPlanSchema.parse(planRes.data));
     stagesRun.push("6-create-correction-plan");
     for (const task of plan.tasks) {
       const finding = newFindings[task.candidateIndex];

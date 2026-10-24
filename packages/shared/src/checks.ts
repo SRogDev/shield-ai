@@ -60,8 +60,11 @@ export function findSecrets(files: SourceFileInput[]): EvidenceItem[] {
   const out: EvidenceItem[] = [];
   for (const file of files) {
     for (const rule of SECRET_RULES) {
-      rule.regex.lastIndex = 0;
-      for (let m = rule.regex.exec(file.content); m !== null; m = rule.regex.exec(file.content)) {
+      // Always iterate with a global copy: a non-global regex never advances
+      // lastIndex and would loop forever on its first match.
+      const flags = rule.regex.flags.includes("g") ? rule.regex.flags : `${rule.regex.flags}g`;
+      const re = new RegExp(rule.regex.source, flags);
+      for (let m = re.exec(file.content); m !== null; m = re.exec(file.content)) {
         const rawValue = m[rule.valueGroup] ?? m[0];
         if (rule.id === "generic-secret-assignment") {
           if (PLACEHOLDER.test(rawValue) || shannonEntropy(rawValue) < 3.2) continue;
@@ -74,7 +77,7 @@ export function findSecrets(files: SourceFileInput[]): EvidenceItem[] {
           pattern: (m[0] ?? "").replace(rawValue, redact(rawValue)).trim(),
           source: "ts-check",
         });
-        if (m[0].length === 0) rule.regex.lastIndex += 1;
+        if (m[0].length === 0) re.lastIndex += 1;
       }
     }
   }

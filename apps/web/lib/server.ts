@@ -1,12 +1,12 @@
 import {
-  NotConfiguredError,
-  ShieldService,
-  UnauthorizedError,
   ForbiddenError,
   InsufficientShieldsError,
-  parseServerEnv,
   missingKeysFor,
+  NotConfiguredError,
+  parseServerEnv,
   type ServerEnv,
+  ShieldService,
+  UnauthorizedError,
 } from "@shield/shared";
 import { ZodError } from "zod";
 
@@ -115,9 +115,7 @@ export async function requireUserId(req: Request): Promise<string> {
 }
 
 export function json(data: unknown, status = 200, headers?: HeadersInit): Response {
-  return headers
-    ? Response.json(data, { status, headers })
-    : Response.json(data, { status });
+  return headers ? Response.json(data, { status, headers }) : Response.json(data, { status });
 }
 
 /** Maps typed errors to HTTP responses. Messages never include source code. */

@@ -21,18 +21,27 @@ export default function LandingPage() {
           Security that lets you build.
         </h1>
         <p style={{ color: "var(--muted)", fontSize: "1.15rem", maxWidth: 640, margin: "0 auto" }}>
-          Shield AI analyzes <strong>your actual project</strong> — not a generic checklist —
-          and gives you evidence-backed findings, a concrete correction plan your coding
-          agent can execute, and verification that the fix really landed.
+          Shield AI analyzes <strong>your actual project</strong> — not a generic checklist — and
+          gives you evidence-backed findings, a concrete correction plan your coding agent can
+          execute, and verification that the fix really landed.
         </p>
-        <div style={{ marginTop: "1.75rem", display: "flex", gap: "0.75rem", justifyContent: "center" }}>
+        <div
+          style={{
+            marginTop: "1.75rem",
+            display: "flex",
+            gap: "0.75rem",
+            justifyContent: "center",
+          }}
+        >
           <a href="/dashboard">
-            <button className="primary" style={{ padding: "0.7rem 1.4rem" }}>
+            <button type="button" className="primary" style={{ padding: "0.7rem 1.4rem" }}>
               Secure your project
             </button>
           </a>
           <a href="#pricing">
-            <button style={{ padding: "0.7rem 1.4rem" }}>See pricing</button>
+            <button type="button" style={{ padding: "0.7rem 1.4rem" }}>
+              See pricing
+            </button>
           </a>
         </div>
         <p style={{ color: "var(--faint)", fontSize: "0.9rem", marginTop: "1rem" }}>
@@ -77,17 +86,24 @@ export default function LandingPage() {
           ))}
         </ul>
         <p style={{ color: "var(--faint)", fontSize: "0.9rem" }}>
-          Findings are mapped to CWE and the OWASP Top 10 / LLM Top 10, with severity based on
-          real impact — never on a suspicious pattern alone.
+          Findings are mapped to CWE and the OWASP Top 10 / LLM Top 10, with severity based on real
+          impact — never on a suspicious pattern alone.
         </p>
       </section>
 
       <section id="pricing" style={{ marginBottom: "3rem" }}>
         <h2 style={{ textAlign: "center" }}>Pricing in Shields</h2>
-        <p style={{ textAlign: "center", color: "var(--muted)", maxWidth: 620, margin: "0 auto 1.5rem" }}>
-          You pay for security work in <strong>Shields</strong>, never for tokens. A full scan
-          costs 5 Shields (12 for large repos), an incremental rescan 3, a quick deterministic
-          scan or a single-fix verification 1. The cost is always shown before you confirm.
+        <p
+          style={{
+            textAlign: "center",
+            color: "var(--muted)",
+            maxWidth: 620,
+            margin: "0 auto 1.5rem",
+          }}
+        >
+          You pay for security work in <strong>Shields</strong>, never for tokens. A full scan costs
+          5 Shields (12 for large repos), an incremental rescan 3, a quick deterministic scan or a
+          single-fix verification 1. The cost is always shown before you confirm.
         </p>
         <div
           style={{
@@ -101,7 +117,9 @@ export default function LandingPage() {
               <h3 style={{ marginTop: 0 }}>{plan.name}</h3>
               <p style={{ fontSize: "2rem", fontWeight: 800, margin: "0.25rem 0" }}>
                 ${plan.priceUsdMonthly}
-                <span style={{ fontSize: "0.95rem", color: "var(--muted)", fontWeight: 500 }}>/mo</span>
+                <span style={{ fontSize: "0.95rem", color: "var(--muted)", fontWeight: 500 }}>
+                  /mo
+                </span>
               </p>
               <p style={{ color: "var(--muted)" }}>
                 {plan.shieldsPerPeriod} Shields {plan.recurring ? "per month" : "one-time"}
@@ -109,7 +127,7 @@ export default function LandingPage() {
                 {plan.maxProjects === 1 ? "1 project" : "Multiple projects"}
               </p>
               <a href="/dashboard">
-                <button className={plan.id === "indie" ? "primary" : undefined}>
+                <button type="button" className={plan.id === "indie" ? "primary" : undefined}>
                   Start with {plan.shieldsPerPeriod} Shields
                 </button>
               </a>
@@ -117,8 +135,9 @@ export default function LandingPage() {
           ))}
         </div>
         <p style={{ textAlign: "center", color: "var(--muted)", marginTop: "1rem" }}>
-          Need more? Shield packs: {SHIELD_PACKS.map((p) => `${p.shields} for $${p.priceUsd}`).join(" · ")}.
-          Pack Shields never expire and are never auto-recharged.
+          Need more? Shield packs:{" "}
+          {SHIELD_PACKS.map((p) => `${p.shields} for $${p.priceUsd}`).join(" · ")}. Pack Shields
+          never expire and are never auto-recharged.
         </p>
       </section>
     </div>

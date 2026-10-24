@@ -1,5 +1,5 @@
-import { errorResponse, json, requireUserId, serverEnv, service } from "@/lib/server";
 import { DevicePollRequestSchema } from "@shield/shared";
+import { errorResponse, json, service } from "@/lib/server";
 
 export async function POST(req: Request): Promise<Response> {
   try {

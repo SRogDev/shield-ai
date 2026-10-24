@@ -1,1 +1,8 @@
-{ "name": "sample-ai-saas", "private": true, "dependencies": { "next": "16.4.3", "lodash": "4.17.20" } }
+{
+  "name": "sample-ai-saas",
+  "private": true,
+  "dependencies": {
+    "next": "16.4.3",
+    "lodash": "4.17.20"
+  }
+}

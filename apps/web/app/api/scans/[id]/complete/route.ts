@@ -1,7 +1,10 @@
-import { errorResponse, json, requireUserId, serverEnv, service } from "@/lib/server";
 import { startAnalysis } from "@/lib/analysis";
+import { errorResponse, json, requireUserId, service } from "@/lib/server";
 
-export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }): Promise<Response> {
+export async function POST(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+): Promise<Response> {
   try {
     const userId = await requireUserId(req);
     const { id } = await ctx.params;

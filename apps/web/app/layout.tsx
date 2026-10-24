@@ -43,7 +43,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <a href="/" style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--ink)" }}>
               Shield AI
             </a>
-            <nav style={{ marginLeft: "auto", display: "flex", gap: "1.25rem", fontSize: "0.95rem" }}>
+            <nav
+              style={{ marginLeft: "auto", display: "flex", gap: "1.25rem", fontSize: "0.95rem" }}
+            >
               <a href="/dashboard">Dashboard</a>
               <a href="/approve">Approve a device</a>
               <a href="/#pricing">Pricing</a>
@@ -61,10 +63,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }}
         >
           <div className="container">
-            Shield AI never stores your source code. Analysis runs on Vercel infrastructure,
-            which retains workflow run data under its own retention policy, and snippets are
-            sent to the model providers behind Vercel AI Gateway under their terms. A scan
-            helps you find weaknesses — it never proves an application secure.
+            Shield AI never stores your source code. Analysis runs on Vercel infrastructure, which
+            retains workflow run data under its own retention policy, and snippets are sent to the
+            model providers behind Vercel AI Gateway under their terms. A scan helps you find
+            weaknesses — it never proves an application secure.
             <br />
             Support: <em>[mailbox on rogeroriaglez.com to be confirmed]</em>
           </div>

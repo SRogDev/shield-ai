@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { AiProvider, StructuredResult, WorkflowStageName } from "./ai.js";
+import type { DeterministicToolRunner } from "./checks.js";
 import { CompositeToolRunner, TsToolRunner } from "./checks.js";
 import { NotConfiguredError, StageFailedError } from "./errors.js";
-import type { DeterministicToolRunner } from "./checks.js";
+import type { Finding } from "./schemas.js";
 import { StubAiProvider } from "./stub-provider.js";
 import { runScanWorkflow } from "./workflow.js";
-import type { Finding } from "./schemas.js";
 
 const VULNERABLE_FILES = [
   {
@@ -13,7 +13,7 @@ const VULNERABLE_FILES = [
     content:
       "export async function GET(req: Request) { const id = new URL(req.url).searchParams.get('id'); return Response.json(await db.orders.find(id)); }",
   },
-  { path: "src/config.ts", content: 'export const cfg = { debug: true };' },
+  { path: "src/config.ts", content: "export const cfg = { debug: true };" },
 ];
 
 const FIXED_FILES = [
@@ -25,7 +25,11 @@ const FIXED_FILES = [
   { path: "src/config.ts", content: "export const cfg = { debug: false };" },
 ];
 
-async function runWith(files: typeof VULNERABLE_FILES, priorFindings: Finding[] = [], action: "full" | "quick" | "incremental" = "full") {
+async function runWith(
+  files: typeof VULNERABLE_FILES,
+  priorFindings: Finding[] = [],
+  action: "full" | "quick" | "incremental" = "full",
+) {
   const tools = new TsToolRunner();
   const evidence = (await tools.run(files)).evidence;
   const ai = new StubAiProvider({ files, evidence });
@@ -80,7 +84,11 @@ describe("runScanWorkflow (stub provider — pipeline mechanics)", () => {
 
   it("does not judge prior findings in files that were not rescanned", async () => {
     const first = await runWith(VULNERABLE_FILES);
-    const partial = await runWith([FIXED_FILES[1] as (typeof FIXED_FILES)[number]], first.findings, "incremental");
+    const partial = await runWith(
+      [FIXED_FILES[1] as (typeof FIXED_FILES)[number]],
+      first.findings,
+      "incremental",
+    );
     const routePrior = first.findings.find((f) => f.filePath.includes("route.ts"));
     expect(partial.verificationUpdates.find((u) => u.findingId === routePrior?.id)).toBeUndefined();
   });
@@ -100,17 +108,29 @@ describe("runScanWorkflow (stub provider — pipeline mechanics)", () => {
     const evidence = (await tools.run(FIXED_FILES)).evidence;
     const ai = new StubAiProvider({ files: FIXED_FILES, evidence });
     const result = await runScanWorkflow(
-      { scanId: "scan-verify", projectId: "proj-1", action: "verify", files: FIXED_FILES, priorFindings: first.findings, verifyFindingId: target.id },
+      {
+        scanId: "scan-verify",
+        projectId: "proj-1",
+        action: "verify",
+        files: FIXED_FILES,
+        priorFindings: first.findings,
+        verifyFindingId: target.id,
+      },
       { ai, tools, budgetUsd: 0.05 },
     );
-    expect(result.verificationUpdates).toEqual([{ findingId: target.id, status: "fixed_verified" }]);
+    expect(result.verificationUpdates).toEqual([
+      { findingId: target.id, status: "fixed_verified" },
+    ]);
   });
 
   it("fails the stage (not the data) when the AI returns malformed output", async () => {
     const broken: AiProvider = {
       name: "broken",
       async generateStructured<T>(_stage: WorkflowStageName): Promise<StructuredResult<T>> {
-        return { data: { nonsense: true } as T, usage: { inputTokens: 1, outputTokens: 1, costUsd: 0, synthetic: true } };
+        return {
+          data: { nonsense: true } as T,
+          usage: { inputTokens: 1, outputTokens: 1, costUsd: 0, synthetic: true },
+        };
       },
     };
     const tools = new TsToolRunner();
@@ -126,7 +146,10 @@ describe("runScanWorkflow (stub provider — pipeline mechanics)", () => {
     const pricey: AiProvider = {
       name: "pricey",
       async generateStructured<T>(_stage: WorkflowStageName): Promise<StructuredResult<T>> {
-        return { data: {} as T, usage: { inputTokens: 1, outputTokens: 1, costUsd: 10, synthetic: true } };
+        return {
+          data: {} as T,
+          usage: { inputTokens: 1, outputTokens: 1, costUsd: 10, synthetic: true },
+        };
       },
     };
     const tools = new TsToolRunner();

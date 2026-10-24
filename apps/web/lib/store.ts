@@ -1,6 +1,12 @@
 "use client";
 
-import type { Finding, LedgerEntry, PlanDefinition, Project, RemediationTask } from "@shield/shared";
+import type {
+  Finding,
+  LedgerEntry,
+  PlanDefinition,
+  Project,
+  RemediationTask,
+} from "@shield/shared";
 import { create } from "zustand";
 
 /**

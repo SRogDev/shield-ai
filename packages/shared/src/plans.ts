@@ -18,9 +18,30 @@ export interface PlanDefinition {
 }
 
 export const PLANS: Record<PlanDefinition["id"], PlanDefinition> = {
-  trial: { id: "trial", name: "Free trial", priceUsdMonthly: 0, shieldsPerPeriod: 15, recurring: false, maxProjects: 1 },
-  indie: { id: "indie", name: "Indie", priceUsdMonthly: 9, shieldsPerPeriod: 40, recurring: true, maxProjects: 1 },
-  builder: { id: "builder", name: "Builder", priceUsdMonthly: 19, shieldsPerPeriod: 100, recurring: true, maxProjects: Number.POSITIVE_INFINITY },
+  trial: {
+    id: "trial",
+    name: "Free trial",
+    priceUsdMonthly: 0,
+    shieldsPerPeriod: 15,
+    recurring: false,
+    maxProjects: 1,
+  },
+  indie: {
+    id: "indie",
+    name: "Indie",
+    priceUsdMonthly: 9,
+    shieldsPerPeriod: 40,
+    recurring: true,
+    maxProjects: 1,
+  },
+  builder: {
+    id: "builder",
+    name: "Builder",
+    priceUsdMonthly: 19,
+    shieldsPerPeriod: 100,
+    recurring: true,
+    maxProjects: Number.POSITIVE_INFINITY,
+  },
 };
 
 export interface ShieldPack {
@@ -73,6 +94,9 @@ export function costForAction(
 }
 
 /** Token/cost budget (USD) an action may spend across AI stages. */
-export function budgetUsdForAction(action: ScanAction, snapshot: { files: number; bytes: number }): number {
+export function budgetUsdForAction(
+  action: ScanAction,
+  snapshot: { files: number; bytes: number },
+): number {
   return costForAction(action, snapshot) * SHIELD_MAX_COGS_USD;
 }

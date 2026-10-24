@@ -55,7 +55,11 @@ export const MODEL_CONFIG: Record<WorkflowStageName, ModelConfigEntry> = {
   explain: { model: "openai/gpt-5-mini", inputUsdPerMillion: 0.25, outputUsdPerMillion: 2.0 },
   plan: { model: "openai/gpt-5-mini", inputUsdPerMillion: 0.25, outputUsdPerMillion: 2.0 },
   // Evaluation stage: one stronger candidate for validity/severity judgment.
-  evaluate: { model: "anthropic/claude-sonnet-4.5", inputUsdPerMillion: 3.0, outputUsdPerMillion: 15.0 },
+  evaluate: {
+    model: "anthropic/claude-sonnet-4.5",
+    inputUsdPerMillion: 3.0,
+    outputUsdPerMillion: 15.0,
+  },
 };
 
 export class GatewayAiProvider implements AiProvider {

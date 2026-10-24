@@ -1,4 +1,4 @@
-import { errorResponse, json, requireUserId, serverEnv, service } from "@/lib/server";
+import { errorResponse, json, serverEnv, service } from "@/lib/server";
 
 export async function POST(): Promise<Response> {
   try {

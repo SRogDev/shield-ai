@@ -10,13 +10,12 @@ export default function DashboardPage() {
   const [email, setEmail] = useState("");
   const [projectName, setProjectName] = useState("");
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: load once on mount by design
   useEffect(() => {
     void state.loadMe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const anyIntegrationMissing =
-    state.me && Object.values(state.me.integrations).some((ok) => !ok);
+  const anyIntegrationMissing = state.me && Object.values(state.me.integrations).some((ok) => !ok);
 
   return (
     <div className="container" style={{ paddingTop: "2rem" }}>
@@ -24,15 +23,14 @@ export default function DashboardPage() {
 
       {anyIntegrationMissing && (
         <div className="banner" style={{ marginBottom: "1rem" }}>
-          <strong>Local mode.</strong> Some integrations are not configured in this
-          environment (
+          <strong>Local mode.</strong> Some integrations are not configured in this environment (
           {Object.entries(state.me?.integrations ?? {})
             .filter(([, ok]) => !ok)
             .map(([name]) => name)
             .join(", ")}
-          ). Unconfigured integrations return clear errors and nothing is fabricated;
-          analysis runs on the labeled stub provider until an AI Gateway key is set.
-          See <code>docs/SETUP.md</code>.
+          ). Unconfigured integrations return clear errors and nothing is fabricated; analysis runs
+          on the labeled stub provider until an AI Gateway key is set. See{" "}
+          <code>docs/SETUP.md</code>.
         </div>
       )}
 
@@ -109,6 +107,7 @@ export default function DashboardPage() {
               {state.projects.map((p) => (
                 <li key={p.id} style={{ padding: "0.35rem 0" }}>
                   <button
+                    type="button"
                     onClick={() => void state.selectProject(p.id)}
                     className={state.selectedProjectId === p.id ? "primary" : undefined}
                   >
@@ -196,7 +195,10 @@ export default function DashboardPage() {
             )}
             <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "var(--muted)" }}>
               {[...state.me.history].reverse().map((entry) => (
-                <li key={entry.id} style={{ padding: "0.3rem 0", borderTop: "1px solid var(--border)" }}>
+                <li
+                  key={entry.id}
+                  style={{ padding: "0.3rem 0", borderTop: "1px solid var(--border)" }}
+                >
                   <strong style={{ color: entry.amount > 0 ? "var(--blue)" : "var(--high)" }}>
                     {entry.amount > 0 ? "+" : ""}
                     {entry.amount}

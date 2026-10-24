@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ForbiddenError } from "./errors.js";
-import { MCP_TOOLS, callMcpTool } from "./mcp.js";
+import { callMcpTool, MCP_TOOLS } from "./mcp.js";
 import { ShieldService } from "./services.js";
 
 function setup() {
@@ -27,7 +27,9 @@ describe("remote MCP tool surface (PLAN_V2 §12)", () => {
     const { svc, alice, bob, aliceProject } = setup();
     const projects = callMcpTool(svc, alice.id, "list_projects", {}) as { id: string }[];
     expect(projects.map((p) => p.id)).toEqual([aliceProject.id]);
-    expect(() => callMcpTool(svc, bob.id, "list_findings", { projectId: aliceProject.id })).toThrow(ForbiddenError);
+    expect(() => callMcpTool(svc, bob.id, "list_findings", { projectId: aliceProject.id })).toThrow(
+      ForbiddenError,
+    );
   });
 
   it("rejects unknown tools (no hidden write surface)", () => {
@@ -45,7 +47,11 @@ describe("remote MCP tool surface (PLAN_V2 §12)", () => {
   it("returns findings and verification status for the owner", () => {
     const { svc, alice, aliceProject } = setup();
     expect(callMcpTool(svc, alice.id, "list_findings", { projectId: aliceProject.id })).toEqual([]);
-    expect(callMcpTool(svc, alice.id, "get_verification_status", { projectId: aliceProject.id })).toEqual([]);
-    expect(callMcpTool(svc, alice.id, "list_remediation_tasks", { projectId: aliceProject.id })).toEqual([]);
+    expect(
+      callMcpTool(svc, alice.id, "get_verification_status", { projectId: aliceProject.id }),
+    ).toEqual([]);
+    expect(
+      callMcpTool(svc, alice.id, "list_remediation_tasks", { projectId: aliceProject.id }),
+    ).toEqual([]);
   });
 });

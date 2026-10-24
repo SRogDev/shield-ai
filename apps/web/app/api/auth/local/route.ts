@@ -1,7 +1,6 @@
-import { errorResponse, json, requireUserId, serverEnv, service } from "@/lib/server";
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { supabaseConfigured } from "@/lib/server";
+import { errorResponse, json, service, supabaseConfigured } from "@/lib/server";
 
 const Body = z.object({ email: z.string().email() });
 
@@ -23,11 +22,9 @@ export async function POST(req: Request): Promise<Response> {
     } catch {
       svc.createUser({ id, email: body.email });
     }
-    return json(
-      { ok: true, userId: id },
-      200,
-      { "set-cookie": `shield_session=${id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000` },
-    );
+    return json({ ok: true, userId: id }, 200, {
+      "set-cookie": `shield_session=${id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000`,
+    });
   } catch (err) {
     return errorResponse(err);
   }

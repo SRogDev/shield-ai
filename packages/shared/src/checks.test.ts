@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
-  StubOsvClient,
-  TsToolRunner,
   extractDependencies,
   findInsecureConfig,
   findSecrets,
   findUnauthenticatedRoutes,
   findVulnerableDependencies,
   parsePackageLock,
+  StubOsvClient,
   shannonEntropy,
+  TsToolRunner,
 } from "./checks.js";
 
 describe("findSecrets", () => {
@@ -50,7 +50,11 @@ describe("findSecrets", () => {
 describe("findInsecureConfig", () => {
   it("flags wildcard CORS, disabled TLS verification, and debug mode", () => {
     const files = [
-      { path: "src/server.ts", content: 'app.use(cors({ origin: "*" }));\nconst agent = { rejectUnauthorized: false };\nconst cfg = { debug: true };' },
+      {
+        path: "src/server.ts",
+        content:
+          'app.use(cors({ origin: "*" }));\nconst agent = { rejectUnauthorized: false };\nconst cfg = { debug: true };',
+      },
     ];
     const ids = findInsecureConfig(files).map((e) => e.checkId);
     expect(ids).toContain("config:cors-wildcard");
@@ -122,7 +126,10 @@ describe("TsToolRunner", () => {
   it("aggregates all check families", async () => {
     const runner = new TsToolRunner();
     const result = await runner.run([
-      { path: "app/api/x/route.ts", content: "export async function POST() { return Response.json({}); }" },
+      {
+        path: "app/api/x/route.ts",
+        content: "export async function POST() { return Response.json({}); }",
+      },
       { path: "src/k.ts", content: "-----BEGIN PRIVATE KEY-----" },
     ]);
     expect(result.unavailableTools).toEqual([]);
